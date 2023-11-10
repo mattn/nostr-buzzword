@@ -223,6 +223,9 @@ func postRanks(ev *nostr.Event) {
 		}
 		items = append(items, item)
 	}
+	if len(items) < 5 {
+		return
+	}
 	sort.Slice(items, func(i, j int) bool {
 		return items[i].Count > items[j].Count
 	})
