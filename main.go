@@ -166,6 +166,8 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 		select {
 		case ev = <-ch:
 		case <-summarizer.C:
+			postRanks(nil)
+			continue
 		case <-deleter.C:
 			now := time.Now()
 			mu.Lock()
