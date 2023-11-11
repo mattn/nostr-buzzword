@@ -182,7 +182,13 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 			continue
 		}
 		tokens := t.Tokenize(normalize(ev.Content))
+		seen := map[string]struct{}{}
 		for _, token := range tokens {
+			if _, ok := seen[token.Surface]; ok {
+				continue
+			}
+			seen[token.Surface] = struct{}{}
+
 			cc := token.Features()
 			if isIgnore(d, cc) {
 				continue
