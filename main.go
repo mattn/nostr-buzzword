@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -41,12 +42,7 @@ var (
 		"wss://nos.lol",
 	}
 
-	ignores = []string{
-		"npub150qnaaxfan8auqdajvn292cgk2khm3tl8dmakamj878z44a6yntqk7uktv", // 流速ちゃｎ
-		"npub1f6rvmwc76arl7sxx2vparlzx8cg2ajc3xpymqh7yx97znccue2hs5mkavc", // ぬるぽ
-		"npub1w7g33p5hrljhnl37f7gdnhr7j87dwjzsms59x6qllutk2jepszgs65t8dc", // ビットコイン
-		"npub17a50460j8y99yglsqzjzfh4exq4f8q0r82ackzzv4pz0dyd3rnwsxc9tp2", // buzzword
-	}
+	ignores = []string{}
 )
 
 func normalize(s string) string {
@@ -153,6 +149,26 @@ func init() {
 	}
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if ign := os.Getenv("IGNORES"); ign != "" {
+		f, err := os.Open(ign)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			text := scanner.Text()
+			if strings.HasPrefix(text, "#") {
+				continue
+			}
+			tok := strings.Split(text, " ")
+			if len(tok) >= 1 {
+				ignores = append(ignores, tok[0])
+			}
+		}
 	}
 }
 

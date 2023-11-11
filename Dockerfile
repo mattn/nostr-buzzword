@@ -12,6 +12,8 @@ RUN [ -e /usr/bin/upx ] && upx /go/bin/nostr-buzzword || echo
 FROM scratch
 COPY --link --from=build-dev /go/bin/nostr-buzzword /go/bin/nostr-buzzword
 COPY --link --from=build-dev /go/src/app/userdic.txt /go/bin/userdic.txt
+COPY --link --from=build-dev /go/src/app/ignores.txt /go/bin/ignores.txt
 COPY --from=build-dev /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 ENV USERDIC=/go/bin/userdic.txt
+ENV IGNORES=/go/bin/ignores.txt
 CMD ["/go/bin/nostr-buzzword"]
