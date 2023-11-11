@@ -142,7 +142,7 @@ func init() {
 	var err error
 	d = ipaneologd.Dict()
 
-	if dic := os.Getenv("USERDICT"); dic != "" {
+	if dic := os.Getenv("USERDIC"); dic != "" {
 		udict, err := dict.NewUserDict("userdic.txt")
 		if err != nil {
 			log.Fatal(err)

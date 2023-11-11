@@ -9,3 +9,5 @@
 
 # Nostr,Nostr,ノストラ,カスタム名詞
 # X JAPAN,X JAPAN,エックス ジャパン,カスタム名詞
+bsky.social,bsky social,ビースカイ ソーシャル,カスタム名詞
+bsky.app,bsky app,ビースカイ アップ,カスタム名詞
