@@ -7,6 +7,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -58,7 +59,7 @@ func isIgnore(d *dict.Dict, c []string) bool {
 	if len(c) == 0 {
 		return true
 	}
-	if c[0] != "名詞" && c[0] != "副詞" {
+	if c[0] != "名詞" && c[0] != "副詞" && c[0] != "カスタム名詞" {
 		return true
 	}
 	if c[0] == "名詞" && c[1] != "一般" && c[1] != "固有名詞" {
@@ -140,7 +141,13 @@ var (
 func init() {
 	var err error
 	d = ipaneologd.Dict()
-	t, err = tokenizer.New(d, tokenizer.OmitBosEos())
+
+	udict, err := dict.NewUserDict("userdic.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	t, err = tokenizer.New(d, tokenizer.UserDict(udict), tokenizer.OmitBosEos())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -167,6 +174,9 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 		var ev *nostr.Event
 		select {
 		case ev = <-ch:
+			if ev == nil {
+				return
+			}
 		case <-summarizer.C:
 			postRanks(nil)
 			continue
@@ -299,13 +309,41 @@ loop:
 	wg.Wait()
 }
 
+func test() {
+	b, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		log.Fatal(err)
+	}
+	tokens := t.Tokenize(normalize(string(b)))
+	seen := map[string]struct{}{}
+	for _, token := range tokens {
+		if _, ok := seen[token.Surface]; ok {
+			continue
+		}
+		seen[token.Surface] = struct{}{}
+
+		cc := token.Features()
+		fmt.Println(cc)
+		if isIgnore(d, cc) {
+			continue
+		}
+		fmt.Println(token.Surface)
+	}
+}
+
 func main() {
-	var ver bool
+	var ver, t bool
+	flag.BoolVar(&t, "t", false, "test")
 	flag.BoolVar(&ver, "version", false, "show version")
 	flag.Parse()
 
 	if ver {
 		fmt.Println(version)
+		os.Exit(0)
+	}
+
+	if t {
+		test()
 		os.Exit(0)
 	}
 
