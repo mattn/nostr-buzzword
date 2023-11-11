@@ -290,7 +290,7 @@ func server() {
 	defer relay.Close()
 
 	sub, err := relay.Subscribe(context.Background(), []nostr.Filter{{
-		Kinds: []int{nostr.KindTextNote, nostr.KindChannelMessage, nostr.KindProfileMetadata},
+		Kinds: []int{nostr.KindTextNote, nostr.KindChannelMessage},
 	}})
 	if err != nil {
 		log.Println(err)
