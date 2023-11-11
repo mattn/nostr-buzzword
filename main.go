@@ -142,12 +142,15 @@ func init() {
 	var err error
 	d = ipaneologd.Dict()
 
-	udict, err := dict.NewUserDict("userdic.txt")
-	if err != nil {
-		log.Fatal(err)
+	if dic := os.Getenv("USERDICT"); dic != "" {
+		udict, err := dict.NewUserDict("userdic.txt")
+		if err != nil {
+			log.Fatal(err)
+		}
+		t, err = tokenizer.New(d, tokenizer.UserDict(udict), tokenizer.OmitBosEos())
+	} else {
+		t, err = tokenizer.New(d, tokenizer.OmitBosEos())
 	}
-
-	t, err = tokenizer.New(d, tokenizer.UserDict(udict), tokenizer.OmitBosEos())
 	if err != nil {
 		log.Fatal(err)
 	}

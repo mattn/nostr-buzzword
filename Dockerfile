@@ -11,5 +11,7 @@ RUN CGO_ENABLED=0 go install -buildvcs=false -trimpath -ldflags '-w -s'
 RUN [ -e /usr/bin/upx ] && upx /go/bin/nostr-buzzword || echo
 FROM scratch
 COPY --link --from=build-dev /go/bin/nostr-buzzword /go/bin/nostr-buzzword
+COPY --link --from=build-dev /go/src/userdict.txt /go/bin/userdict.txt
 COPY --from=build-dev /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+ENV USERDICT=/go/bin/userdict.txt
 CMD ["/go/bin/nostr-buzzword"]
