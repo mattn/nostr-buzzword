@@ -61,7 +61,7 @@ func isIgnore(d *dict.Dict, c []string) bool {
 	if c[0] != "名詞" && c[0] != "副詞" {
 		return true
 	}
-	if c[0] == "名詞" && c[1] != "一般" {
+	if c[0] == "名詞" && c[1] != "一般" && c[1] != "固有名詞" {
 		return true
 	}
 	return false
