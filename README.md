@@ -2,9 +2,13 @@
 
 ![](https://image.nostr.build/a69e388c4bdf0ea8a60b2380337ad7518247c958047ad85df847b04ae35c30c5.png)
 
+Buzz Word bot on nostr
+
 ## Usage
 
-Buzz Word bot on nostr
+```
+$ BOT_NSEC=nsecxxxxxxx nostr-buzzword
+```
 
 ## Installation
 
