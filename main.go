@@ -89,6 +89,7 @@ func postEvent(nsec string, relays []string, ev *nostr.Event, content string) er
 		eev.CreatedAt = ev.CreatedAt + 1
 		eev.Kind = ev.Kind
 		eev.Tags = eev.Tags.AppendUnique(nostr.Tag{"e", ev.ID, "", "reply"})
+		eev.Tags = eev.Tags.AppendUnique(nostr.Tag{"p", ev.ID})
 		for _, te := range ev.Tags {
 			if te.Key() == "e" {
 				eev.Tags = eev.Tags.AppendUnique(te)
