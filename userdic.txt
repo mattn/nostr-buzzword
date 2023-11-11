@@ -9,6 +9,8 @@
 
 # Nostr,Nostr,ノストラ,カスタム名詞
 # X JAPAN,X JAPAN,エックス ジャパン,カスタム名詞
+𝑫𝒐 𝑵𝒐𝒔𝒕𝒓,𝑫𝒐 𝑵𝒐𝒔𝒕𝒓,ドゥ ノストラ,カスタム名詞
+Do Nostr,Do Nostr,ドゥ ノストラ,カスタム名詞
 bsky.social,bsky social,ビースカイ ソーシャル,カスタム名詞
 bsky.app,bsky app,ビースカイ アップ,カスタム名詞
 しお画像,しお 画像,シオ ガゾウ,カスタム名詞
