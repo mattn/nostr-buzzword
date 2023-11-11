@@ -67,6 +67,24 @@ func isIgnore(d *dict.Dict, c []string) bool {
 	return false
 }
 
+func publishEvent(wg *sync.WaitGroup, r string, ev nostr.Event, success *atomic.Int64) {
+	defer wg.Done()
+
+	relay, err := nostr.RelayConnect(context.Background(), r)
+	if err != nil {
+		log.Println(relay.URL, err)
+		return
+	}
+	status, err := relay.Publish(context.Background(), ev)
+	if err != nil {
+		log.Println(relay.URL, status, err)
+	}
+	relay.Close()
+	if err == nil && status != nostr.PublishStatusFailed {
+		success.Add(1)
+	}
+}
+
 func postEvent(nsec string, relays []string, ev *nostr.Event, content string) error {
 	eev := nostr.Event{}
 	var sk string
@@ -106,21 +124,7 @@ func postEvent(nsec string, relays []string, ev *nostr.Event, content string) er
 	var wg sync.WaitGroup
 	for _, r := range relays {
 		wg.Add(1)
-		go func(r string) {
-			relay, err := nostr.RelayConnect(context.Background(), r)
-			if err != nil {
-				log.Println(relay.URL, err)
-				return
-			}
-			status, err := relay.Publish(context.Background(), eev)
-			if err != nil {
-				log.Println(relay.URL, status, err)
-			}
-			relay.Close()
-			if err == nil && status != nostr.PublishStatusFailed {
-				success.Add(1)
-			}
-		}(r)
+		go publishEvent(&wg, r, eev, &success)
 	}
 	wg.Wait()
 	if success.Load() == 0 {
