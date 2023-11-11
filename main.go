@@ -67,10 +67,10 @@ func isIgnore(d *dict.Dict, c []string) bool {
 func postEvent(nsec string, relays []string, ev *nostr.Event, content string) error {
 	eev := nostr.Event{}
 	var sk string
-	if _, s, err := nip19.Decode(nsec); err != nil {
-		return err
-	} else {
+	if _, s, err := nip19.Decode(nsec); err == nil {
 		sk = s.(string)
+	} else {
+		return err
 	}
 	if pub, err := nostr.GetPublicKey(sk); err == nil {
 		if _, err := nip19.EncodePublicKey(pub); err != nil {
@@ -117,11 +117,13 @@ func postEvent(nsec string, relays []string, ev *nostr.Event, content string) er
 	return nil
 }
 
+// Word is structure of word
 type Word struct {
 	Content string
 	Time    time.Time
 }
 
+// HotItem is structure of hot item
 type HotItem struct {
 	Word  string
 	Count int
@@ -243,7 +245,7 @@ func postRanks(ev *nostr.Event) {
 	mu.Lock()
 	for _, word := range words {
 		if i, ok := hotwords[word.Content]; ok {
-			i.Count += 1
+			i.Count++
 		} else {
 			hotwords[word.Content] = &HotItem{
 				Word:  word.Content,
@@ -271,7 +273,7 @@ func postRanks(ev *nostr.Event) {
 	}
 
 	var buf bytes.Buffer
-	fmt.Fprintln(&buf, "#バズワードランキング\n")
+	fmt.Fprint(&buf, "#バズワードランキング\n\n")
 	for i, item := range items {
 		fmt.Fprintf(&buf, "%d位: %s (%d)\n", i+1, item.Word, item.Count)
 	}
