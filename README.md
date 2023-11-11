@@ -10,6 +10,8 @@ Buzz Word bot on nostr
 $ BOT_NSEC=nsecxxxxxxx nostr-buzzword
 ```
 
+This bot replies buzz word ranking summary if you post `バズワードランキング` on timeline or group chat.
+
 ## Installation
 
 ```
@@ -18,7 +20,7 @@ go install github.com/mattn/nostr-buzzword@latest
 
 If you would like to ignore some npub(s), set $IGNORES for the path to the ignores.txt which is listed npub hex.
 
-If you would like to use user dictionary to use customized tokenizer, set $USERDIC for the path to the userdic.txt written as mecab dicionary format.
+If you would like to use user dictionary to use customized tokenizer, set $USERDIC for the path to the userdic.txt written as mecab dictionary format.
 
 ## License
 
