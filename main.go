@@ -16,6 +16,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/ikawaha/kagome-dict-ipa-neologd"
@@ -46,7 +47,9 @@ var (
 )
 
 func normalize(s string) string {
+	// remove URLs
 	s = reLink.ReplaceAllString(s, "")
+	// remove Tags
 	s = reTag.ReplaceAllString(s, "")
 	return strings.TrimSpace(s)
 }
@@ -99,19 +102,28 @@ func postEvent(nsec string, relays []string, ev *nostr.Event, content string) er
 	eev.Tags = eev.Tags.AppendUnique(nostr.Tag{"t", "バズワードランキング"})
 	eev.Sign(sk)
 
-	success := 0
+	var success atomic.Int64
+	var wg sync.WaitGroup
 	for _, r := range relays {
-		relay, err := nostr.RelayConnect(context.Background(), r)
-		if err != nil {
-			continue
-		}
-		status, err := relay.Publish(context.Background(), eev)
-		relay.Close()
-		if err == nil && status != nostr.PublishStatusFailed {
-			success++
-		}
+		wg.Add(1)
+		go func(r string) {
+			relay, err := nostr.RelayConnect(context.Background(), r)
+			if err != nil {
+				log.Println(relay.URL, err)
+				return
+			}
+			status, err := relay.Publish(context.Background(), eev)
+			if err != nil {
+				log.Println(relay.URL, status, err)
+			}
+			relay.Close()
+			if err == nil && status != nostr.PublishStatusFailed {
+				success.Add(1)
+			}
+		}(r)
 	}
-	if success == 0 {
+	wg.Wait()
+	if success.Load() == 0 {
 		return errors.New("failed to publish")
 	}
 	return nil
@@ -140,6 +152,7 @@ func init() {
 	var err error
 	d = ipaneologd.Dict()
 
+	// load userdic.txt
 	if dic := os.Getenv("USERDIC"); dic != "" {
 		udict, err := dict.NewUserDict(dic)
 		if err != nil {
@@ -153,6 +166,7 @@ func init() {
 		log.Fatal(err)
 	}
 
+	// load ignores.txt
 	if ign := os.Getenv("IGNORES"); ign != "" {
 		f, err := os.Open(ign)
 		if err != nil {
@@ -186,8 +200,10 @@ func isBad(npub string) bool {
 func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 	defer wg.Done()
 
+	// summarizer post a summary every hour
 	summarizer := time.NewTicker(time.Hour)
 	defer summarizer.Stop()
+	// deleter delete old enties
 	deleter := time.NewTicker(10 * time.Minute)
 	defer deleter.Stop()
 
@@ -210,6 +226,7 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 			mu.Unlock()
 			continue
 		}
+		// check ignored npub
 		if isBad(ev.PubKey) {
 			continue
 		}
@@ -217,11 +234,13 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 		seen := map[string]struct{}{}
 		for _, token := range tokens {
 			if _, ok := seen[token.Surface]; ok {
+				// ignore word seen
 				continue
 			}
 			seen[token.Surface] = struct{}{}
 
 			cc := token.Features()
+			// check ignored kind of parts
 			if isIgnore(d, cc) {
 				continue
 			}
@@ -241,6 +260,7 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 }
 
 func postRanks(ev *nostr.Event) {
+	// count the number of appearances per word
 	hotwords := map[string]*HotItem{}
 	mu.Lock()
 	for _, word := range words {
@@ -255,6 +275,7 @@ func postRanks(ev *nostr.Event) {
 	}
 	mu.Unlock()
 
+	// make list of items to sort
 	items := []*HotItem{}
 	for _, item := range hotwords {
 		if item.Count < 3 {
@@ -322,9 +343,11 @@ loop:
 		}
 		json.NewEncoder(os.Stdout).Encode(ev)
 		if eose && strings.TrimSpace(ev.Content) == "バズワードランキング" {
+			// post ranking summary as reply
 			postRanks(ev)
 			continue
 		}
+		// otherwise send the ev to goroutine
 		ch <- ev
 	}
 	wg.Wait()
@@ -339,6 +362,7 @@ func test() {
 	seen := map[string]struct{}{}
 	for _, token := range tokens {
 		if _, ok := seen[token.Surface]; ok {
+			// ignore word seen
 			continue
 		}
 		seen[token.Surface] = struct{}{}
