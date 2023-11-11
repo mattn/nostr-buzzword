@@ -44,6 +44,7 @@ var (
 		"npub150qnaaxfan8auqdajvn292cgk2khm3tl8dmakamj878z44a6yntqk7uktv", // 流速ちゃｎ
 		"npub1f6rvmwc76arl7sxx2vparlzx8cg2ajc3xpymqh7yx97znccue2hs5mkavc", // ぬるぽ
 		"npub1w7g33p5hrljhnl37f7gdnhr7j87dwjzsms59x6qllutk2jepszgs65t8dc", // ビットコイン
+		"npub17a50460j8y99yglsqzjzfh4exq4f8q0r82ackzzv4pz0dyd3rnwsxc9tp2", // buzzword
 	}
 )
 
@@ -223,14 +224,14 @@ func postRanks(ev *nostr.Event) {
 		}
 		items = append(items, item)
 	}
-	if len(items) < 5 {
+	if len(items) < 10 {
 		return
 	}
 	sort.Slice(items, func(i, j int) bool {
 		return items[i].Count > items[j].Count
 	})
-	if len(items) > 5 {
-		items = items[:5]
+	if len(items) > 10 {
+		items = items[:10]
 	}
 
 	var buf bytes.Buffer
