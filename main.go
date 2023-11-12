@@ -333,29 +333,44 @@ func server() {
 	wg.Add(1)
 	go collect(&wg, ch)
 
+	retry := 0
 	eose := false
 loop:
 	for {
-		ev, ok := <-sub.Events
-		if !ok || ev == nil {
-			break loop
-		}
+		var ev *nostr.Event
+		var ok bool
 		select {
-		case <-sub.EndOfStoredEvents:
-			eose = true
-		case <-relay.Context().Done():
-			log.Printf("connection closed: %v", relay.Context().Err())
-			break loop
-		default:
+		case ev, ok = <-sub.Events:
+			if !ok || ev == nil {
+				break loop
+			}
+			select {
+			case <-sub.EndOfStoredEvents:
+				eose = true
+			case <-relay.Context().Done():
+				log.Printf("connection closed: %v", relay.Context().Err())
+				break loop
+			default:
+			}
+			json.NewEncoder(os.Stdout).Encode(ev)
+			if eose && strings.TrimSpace(ev.Content) == "バズワードランキング" {
+				// post ranking summary as reply
+				postRanks(ev)
+				continue
+			}
+			// otherwise send the ev to goroutine
+			ch <- ev
+		case <-time.After(10 * time.Second):
+			if relay.ConnectionError != nil {
+				log.Println(relay.ConnectionError)
+				break loop
+			}
+			retry++
+			log.Println("Health check", retry)
+			if retry > 60 {
+				break loop
+			}
 		}
-		json.NewEncoder(os.Stdout).Encode(ev)
-		if eose && strings.TrimSpace(ev.Content) == "バズワードランキング" {
-			// post ranking summary as reply
-			postRanks(ev)
-			continue
-		}
-		// otherwise send the ev to goroutine
-		ch <- ev
 	}
 	wg.Wait()
 }
