@@ -43,7 +43,29 @@ var (
 		"wss://nos.lol",
 	}
 
-	ignores = []string{}
+	ignores  = []string{}
+	badWords = []string{
+		"ー",
+	}
+)
+
+// Word is structure of word
+type Word struct {
+	Content string
+	Time    time.Time
+}
+
+// HotItem is structure of hot item
+type HotItem struct {
+	Word  string
+	Count int
+}
+
+var (
+	d     *dict.Dict
+	t     *tokenizer.Tokenizer
+	mu    sync.Mutex
+	words []Word
 )
 
 func normalize(s string) string {
@@ -54,7 +76,11 @@ func normalize(s string) string {
 	return strings.TrimSpace(s)
 }
 
-func isIgnore(d *dict.Dict, c []string) bool {
+func isIgnoreWord(s string) bool {
+	return slices.Contains(badWords, s)
+}
+
+func isIgnoreKind(d *dict.Dict, c []string) bool {
 	if len(c) == 0 {
 		return true
 	}
@@ -133,25 +159,6 @@ func postEvent(nsec string, relays []string, ev *nostr.Event, content string) er
 	return nil
 }
 
-// Word is structure of word
-type Word struct {
-	Content string
-	Time    time.Time
-}
-
-// HotItem is structure of hot item
-type HotItem struct {
-	Word  string
-	Count int
-}
-
-var (
-	d     *dict.Dict
-	t     *tokenizer.Tokenizer
-	mu    sync.Mutex
-	words []Word
-)
-
 func init() {
 	var err error
 	d = ipaneologd.Dict()
@@ -192,7 +199,7 @@ func init() {
 	}
 }
 
-func isBad(npub string) bool {
+func isIgnoreNpub(npub string) bool {
 	return slices.ContainsFunc(ignores, func(is string) bool {
 		if _, s, err := nip19.Decode(is); err == nil {
 			return s.(string) == npub
@@ -231,7 +238,7 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 			continue
 		}
 		// check ignored npub
-		if isBad(ev.PubKey) {
+		if isIgnoreNpub(ev.PubKey) {
 			continue
 		}
 		tokens := t.Tokenize(normalize(ev.Content))
@@ -245,7 +252,7 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 
 			cc := token.Features()
 			// check ignored kind of parts
-			if isIgnore(d, cc) {
+			if isIgnoreKind(d, cc) {
 				continue
 			}
 			fmt.Println(token.Surface)
@@ -388,9 +395,13 @@ func test() {
 		}
 		seen[token.Surface] = struct{}{}
 
+		if isIgnoreWord(token.Surface) {
+			continue
+		}
+
 		cc := token.Features()
 		fmt.Println(cc)
-		if isIgnore(d, cc) {
+		if isIgnoreKind(d, cc) {
 			continue
 		}
 		fmt.Println(token.Surface)
