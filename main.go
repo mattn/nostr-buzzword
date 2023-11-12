@@ -343,6 +343,9 @@ loop:
 		select {
 		case <-sub.EndOfStoredEvents:
 			eose = true
+		case <-relay.Context().Done():
+			log.Printf("connection closed: %v", relay.Context().Err())
+			break loop
 		default:
 		}
 		json.NewEncoder(os.Stdout).Encode(ev)
