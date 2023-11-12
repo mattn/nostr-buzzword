@@ -3,4 +3,4 @@ k8s
 *.sh
 nostr-buzzword
 backup
-test.json
+*.json
