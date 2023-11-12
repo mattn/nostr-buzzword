@@ -250,6 +250,10 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 			}
 			seen[token.Surface] = struct{}{}
 
+			if isIgnoreWord(token.Surface) {
+				continue
+			}
+
 			cc := token.Features()
 			// check ignored kind of parts
 			if isIgnoreKind(d, cc) {
