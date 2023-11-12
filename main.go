@@ -46,6 +46,10 @@ var (
 	ignores  = []string{}
 	badWords = []string{
 		"ー",
+		"is",
+		"of",
+		"at",
+		"to",
 	}
 )
 
