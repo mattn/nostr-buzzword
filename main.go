@@ -33,8 +33,9 @@ const version = "0.0.33"
 var revision = "HEAD"
 
 var (
-	reLink = regexp.MustCompile(`\b\w+://\S+\b`)
-	reTag  = regexp.MustCompile(`\b(\B#\S+|nostr:\S+)`)
+	reLink     = regexp.MustCompile(`\b\w+://\S+\b`)
+	reTag      = regexp.MustCompile(`\b(\B#\S+|nostr:\S+)`)
+	reJapanese = regexp.MustCompile(`[０-９Ａ-Ｚａ-ｚぁ-ゖァ-ヾ一-鶴]`)
 
 	relays = []string{
 		"wss://relay-jp.nostr.wirednet.jp",
@@ -49,8 +50,10 @@ var (
 		"is",
 		"of",
 		"at",
+		"in",
 		"to",
 		"I",
+		"me",
 		"a",
 		"and",
 	}
@@ -248,6 +251,9 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 		if isIgnoreNpub(ev.PubKey) {
 			continue
 		}
+		if strings.ContainsAny(ev.Content, " \t\n") && !reJapanese.MatchString(ev.Content) {
+			continue
+		}
 		tokens := t.Tokenize(normalize(ev.Content))
 		seen := map[string]struct{}{}
 		for _, token := range tokens {
@@ -411,11 +417,10 @@ func test() {
 		}
 
 		cc := token.Features()
-		fmt.Println(cc)
 		if isIgnoreKind(d, cc) {
 			continue
 		}
-		fmt.Println(token.Surface)
+		fmt.Println(cc, token.Surface)
 	}
 }
 
