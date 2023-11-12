@@ -4,3 +4,4 @@ npub1w7g33p5hrljhnl37f7gdnhr7j87dwjzsms59x6qllutk2jepszgs65t8dc # ビットコ�
 npub17a50460j8y99yglsqzjzfh4exq4f8q0r82ackzzv4pz0dyd3rnwsxc9tp2 # buzzword
 npub16u6jx85wavk5n0kw5r46ma7dunupsp7acmtn3xys7keqvlsfjxpsar5q5c # classmethod
 npub1w7g33p5hrljhnl37f7gdnhr7j87dwjzsms59x6qllutk2jepszgs65t8dc # ビットコインの推奨手数料を通知するボット
+npub1runc0de8jlttarfj5zaej0qeu6v8vh7446mxc0ncs4cxj0qytkrsqskp0s # I RUN CODE
