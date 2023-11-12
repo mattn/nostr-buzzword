@@ -337,10 +337,8 @@ func server() {
 	eose := false
 loop:
 	for {
-		var ev *nostr.Event
-		var ok bool
 		select {
-		case ev, ok = <-sub.Events:
+		case ev, ok := <-sub.Events:
 			if !ok || ev == nil {
 				break loop
 			}
