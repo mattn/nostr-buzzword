@@ -358,6 +358,7 @@ loop:
 			}
 			// otherwise send the ev to goroutine
 			ch <- ev
+			retry = 0
 		case <-time.After(10 * time.Second):
 			if relay.ConnectionError != nil {
 				log.Println(relay.ConnectionError)
