@@ -8,7 +8,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -399,28 +398,40 @@ loop:
 }
 
 func test() {
-	b, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		log.Fatal(err)
-	}
-	tokens := t.Tokenize(normalize(string(b)))
-	seen := map[string]struct{}{}
-	for _, token := range tokens {
-		if _, ok := seen[token.Surface]; ok {
-			// ignore word seen
-			continue
-		}
-		seen[token.Surface] = struct{}{}
-
-		if isIgnoreWord(token.Surface) {
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		var ev nostr.Event
+		err := json.Unmarshal([]byte(scanner.Text()), &ev)
+		if err != nil {
 			continue
 		}
 
-		cc := token.Features()
-		if isIgnoreKind(d, cc) {
+		// check ignored npub
+		if isIgnoreNpub(ev.PubKey) {
 			continue
 		}
-		fmt.Println(cc, token.Surface)
+		if strings.ContainsAny(ev.Content, " \t\n") && !reJapanese.MatchString(ev.Content) {
+			continue
+		}
+		tokens := t.Tokenize(normalize(ev.Content))
+		seen := map[string]struct{}{}
+		for _, token := range tokens {
+			if _, ok := seen[token.Surface]; ok {
+				// ignore word seen
+				continue
+			}
+			seen[token.Surface] = struct{}{}
+
+			if isIgnoreWord(token.Surface) {
+				continue
+			}
+
+			cc := token.Features()
+			if isIgnoreKind(d, cc) {
+				continue
+			}
+			fmt.Println(cc, token.Surface)
+		}
 	}
 }
 
