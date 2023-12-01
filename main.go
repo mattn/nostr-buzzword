@@ -33,7 +33,7 @@ var revision = "HEAD"
 
 var (
 	reLink     = regexp.MustCompile(`\b\w+://\S+\b`)
-	reTag      = regexp.MustCompile(`\b(\B#\S+|nostr:\S+)`)
+	reTag      = regexp.MustCompile(`(\B#\S+|\bnostr:\S+)`)
 	reJapanese = regexp.MustCompile(`[０-９Ａ-Ｚａ-ｚぁ-ゖァ-ヾ一-鶴]`)
 
 	relays = []string{
@@ -87,6 +87,14 @@ func normalize(s string) string {
 
 func isIgnoreWord(s string) bool {
 	return slices.Contains(badWords, s)
+}
+
+func isWhiteSpace(d *dict.Dict, c []string) bool {
+	return len(c) == 0 || c[0] == "空白"
+}
+
+func isSymbolWord(d *dict.Dict, c []string) bool {
+	return len(c) == 0 || c[0] == "記号"
 }
 
 func isIgnoreKind(d *dict.Dict, c []string) bool {
@@ -168,53 +176,30 @@ func postEvent(nsec string, relays []string, ev *nostr.Event, content string) er
 	return nil
 }
 
-func init() {
-	var err error
-	d = ipaneologd.Dict()
-
-	// load userdic.txt
-	if dic := os.Getenv("USERDIC"); dic != "" {
-		udict, err := dict.NewUserDict(dic)
-		if err != nil {
-			log.Fatal(err)
-		}
-		t, err = tokenizer.New(d, tokenizer.UserDict(udict), tokenizer.OmitBosEos())
-	} else {
-		t, err = tokenizer.New(d, tokenizer.OmitBosEos())
-	}
+func isIgnoreNpub(pub string) bool {
+	npub, err := nip19.EncodePublicKey(pub)
 	if err != nil {
-		log.Fatal(err)
+		return false
 	}
-
-	// load ignores.txt
-	if ign := os.Getenv("IGNORES"); ign != "" {
-		f, err := os.Open(ign)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer f.Close()
-
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			text := scanner.Text()
-			if strings.HasPrefix(text, "#") {
-				continue
-			}
-			tok := strings.Split(text, " ")
-			if len(tok) >= 1 {
-				ignores = append(ignores, tok[0])
-			}
-		}
-	}
+	return slices.ContainsFunc(ignores, func(is string) bool {
+		return is == npub
+	})
 }
 
-func isIgnoreNpub(npub string) bool {
-	return slices.ContainsFunc(ignores, func(is string) bool {
-		if _, s, err := nip19.Decode(is); err == nil {
-			return s.(string) == npub
-		}
-		return false
+func appendWord(word string, t time.Time) {
+	if word == "" {
+		return
+	}
+	mu.Lock()
+	fmt.Println("===>", word)
+	words = append(words, Word{
+		Content: word,
+		Time:    t,
 	})
+	if len(words) > 1000 {
+		words = words[1:]
+	}
+	mu.Unlock()
 }
 
 func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
@@ -235,7 +220,9 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 				return
 			}
 		case <-summarizer.C:
-			postRanks(nil)
+			if ranks, err := makeRanks(false); err == nil {
+				postRanks(ranks, nil)
+			}
 			continue
 		case <-deleter.C:
 			now := time.Now()
@@ -246,47 +233,12 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 			mu.Unlock()
 			continue
 		}
-		// check ignored npub
-		if isIgnoreNpub(ev.PubKey) {
-			continue
-		}
-		if strings.ContainsAny(ev.Content, " \t\n") && !reJapanese.MatchString(ev.Content) {
-			continue
-		}
-		tokens := t.Tokenize(normalize(ev.Content))
-		seen := map[string]struct{}{}
-		for _, token := range tokens {
-			if _, ok := seen[token.Surface]; ok {
-				// ignore word seen
-				continue
-			}
-			seen[token.Surface] = struct{}{}
 
-			if isIgnoreWord(token.Surface) {
-				continue
-			}
-
-			cc := token.Features()
-			// check ignored kind of parts
-			if isIgnoreKind(d, cc) {
-				continue
-			}
-			fmt.Println(token.Surface)
-
-			mu.Lock()
-			words = append(words, Word{
-				Content: token.Surface,
-				Time:    ev.CreatedAt.Time(),
-			})
-			if len(words) > 1000 {
-				words = words[1:]
-			}
-			mu.Unlock()
-		}
+		collectWords(ev)
 	}
 }
 
-func postRanks(ev *nostr.Event) {
+func makeRanks(full bool) ([]*HotItem, error) {
 	// count the number of appearances per word
 	hotwords := map[string]*HotItem{}
 	mu.Lock()
@@ -311,15 +263,18 @@ func postRanks(ev *nostr.Event) {
 		items = append(items, item)
 	}
 	if len(items) < 10 {
-		return
+		return nil, fmt.Errorf("too less: %v items", len(items))
 	}
 	sort.Slice(items, func(i, j int) bool {
 		return items[i].Count > items[j].Count
 	})
-	if len(items) > 10 {
+	if !full && len(items) > 10 {
 		items = items[:10]
 	}
+	return items, nil
+}
 
+func postRanks(items []*HotItem, ev *nostr.Event) {
 	var buf bytes.Buffer
 	fmt.Fprint(&buf, "#バズワードランキング\n\n")
 	for i, item := range items {
@@ -376,7 +331,9 @@ loop:
 			json.NewEncoder(os.Stdout).Encode(ev)
 			if eose && strings.TrimSpace(ev.Content) == "バズワードランキング" {
 				// post ranking summary as reply
-				postRanks(ev)
+				if ranks, err := makeRanks(false); err == nil {
+					postRanks(ranks, ev)
+				}
 				continue
 			}
 			// otherwise send the ev to goroutine
@@ -397,6 +354,69 @@ loop:
 	wg.Wait()
 }
 
+func collectWords(ev *nostr.Event) {
+	// check ignored npub
+	if isIgnoreNpub(ev.PubKey) {
+		return
+	}
+	if strings.ContainsAny(ev.Content, " \t\n") && !reJapanese.MatchString(ev.Content) {
+		return
+	}
+	tokens := t.Tokenize(normalize(ev.Content))
+	seen := map[string]struct{}{}
+	prev := ""
+	for _, token := range tokens {
+		if _, ok := seen[token.Surface]; ok {
+			// ignore word seen
+			continue
+		}
+		seen[token.Surface] = struct{}{}
+
+		if isIgnoreWord(token.Surface) {
+			continue
+		}
+
+		cc := token.Features()
+		fmt.Println(cc, token.Surface)
+
+		// check ignored kind of parts
+		if isWhiteSpace(d, cc) {
+			continue
+		}
+		if isSymbolWord(d, cc) {
+			appendWord(prev, ev.CreatedAt.Time())
+			prev = ""
+			continue
+		}
+
+		if cc[0] == "名詞" {
+			if cc[1] == "一般" || cc[1] == "固有名詞" || cc[1] == "サ変接続" || cc[1] == "数" {
+				if !strings.ContainsAny(token.Surface, "()〜/.#*") {
+					prev += token.Surface
+					continue
+				}
+			}
+			if prev != "" && cc[1] == "接尾" {
+				prev += token.Surface
+				continue
+			}
+		} else if cc[0] == "カスタム名詞" {
+			prev += token.Surface
+			continue
+		} else {
+			if cc[0] == "助詞" && cc[1] == "接尾" {
+				prev += token.Surface
+				continue
+			}
+		}
+
+		appendWord(prev, ev.CreatedAt.Time())
+		prev = ""
+	}
+	appendWord(prev, ev.CreatedAt.Time())
+	prev = ""
+}
+
 func test() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
@@ -406,39 +426,26 @@ func test() {
 			continue
 		}
 
-		// check ignored npub
-		if isIgnoreNpub(ev.PubKey) {
-			continue
-		}
-		if strings.ContainsAny(ev.Content, " \t\n") && !reJapanese.MatchString(ev.Content) {
-			continue
-		}
-		tokens := t.Tokenize(normalize(ev.Content))
-		seen := map[string]struct{}{}
-		for _, token := range tokens {
-			if _, ok := seen[token.Surface]; ok {
-				// ignore word seen
-				continue
-			}
-			seen[token.Surface] = struct{}{}
+		collectWords(&ev)
+	}
 
-			if isIgnoreWord(token.Surface) {
-				continue
-			}
-
-			cc := token.Features()
-			if isIgnoreKind(d, cc) {
-				continue
-			}
-			fmt.Println(cc, token.Surface)
-		}
+	items, err := makeRanks(true)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for i, item := range items {
+		fmt.Fprintf(os.Stdout, "%d位: %s (%d)\n", i+1, item.Word, item.Count)
 	}
 }
 
 func main() {
-	var ver, t bool
-	flag.BoolVar(&t, "t", false, "test")
+	var ver, tt bool
+	var ignoresFile string
+	var userdicFile string
+	flag.BoolVar(&tt, "t", false, "test")
 	flag.BoolVar(&ver, "version", false, "show version")
+	flag.StringVar(&ignoresFile, "ignores", "ignores.txt", "path to ignores.txt")
+	flag.StringVar(&userdicFile, "userdic", "userdic.txt", "path to userdic.txt")
 	flag.Parse()
 
 	if ver {
@@ -446,7 +453,39 @@ func main() {
 		os.Exit(0)
 	}
 
-	if t {
+	var err error
+	d = ipaneologd.Dict()
+
+	// load userdic.txt
+	udict, err := dict.NewUserDict(userdicFile)
+	if err == nil {
+		t, err = tokenizer.New(d, tokenizer.UserDict(udict), tokenizer.OmitBosEos())
+	} else {
+		t, err = tokenizer.New(d, tokenizer.OmitBosEos())
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// load ignores.txt
+	f, err := os.Open(ignoresFile)
+	if err == nil {
+		defer f.Close()
+
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			text := scanner.Text()
+			if strings.HasPrefix(text, "#") {
+				continue
+			}
+			tok := strings.Split(text, " ")
+			if len(tok) >= 1 {
+				ignores = append(ignores, tok[0])
+			}
+		}
+	}
+
+	if tt {
 		test()
 		os.Exit(0)
 	}
