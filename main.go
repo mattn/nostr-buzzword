@@ -441,14 +441,21 @@ func test() {
 	}
 }
 
+func env(name string, def string) string {
+	if val := os.Getenv(name); val != "" {
+		return val
+	}
+	return def
+}
+
 func main() {
 	var ver, tt bool
 	var ignoresFile string
 	var userdicFile string
 	flag.BoolVar(&tt, "t", false, "test")
 	flag.BoolVar(&ver, "version", false, "show version")
-	flag.StringVar(&ignoresFile, "ignores", "ignores.txt", "path to ignores.txt")
-	flag.StringVar(&userdicFile, "userdic", "userdic.txt", "path to userdic.txt")
+	flag.StringVar(&ignoresFile, "ignores", env("IGNORES", "ignores.txt"), "path to ignores.txt")
+	flag.StringVar(&userdicFile, "userdic", env("USERDIC", "userdic.txt"), "path to userdic.txt")
 	flag.Parse()
 
 	if ver {
