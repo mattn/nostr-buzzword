@@ -269,6 +269,13 @@ func makeRanks(full bool) ([]*HotItem, error) {
 		}
 		items = append(items, item)
 	}
+	for i := 1; i < len(items); i++ {
+		for j := 0; j < i; j++ {
+			if strings.ToLower(items[i].Word) == strings.ToLower(items[j].Word) {
+				items = slices.Delete(items, j, j+1)
+			}
+		}
+	}
 	if len(items) < 10 {
 		return nil, fmt.Errorf("too less: %v items", len(items))
 	}
