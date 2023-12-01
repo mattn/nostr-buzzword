@@ -380,14 +380,14 @@ func collectWords(ev *nostr.Event) {
 	seen := map[string]struct{}{}
 	prev := ""
 	for _, token := range tokens {
+		cc := token.Features()
+		fmt.Println(cc, token.Surface)
+
 		if _, ok := seen[token.Surface]; ok {
 			// ignore word seen
 			continue
 		}
 		seen[token.Surface] = struct{}{}
-
-		cc := token.Features()
-		fmt.Println(cc, token.Surface)
 
 		// check ignored kind of parts
 		if isWhiteSpace(d, cc) {
