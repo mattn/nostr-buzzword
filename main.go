@@ -46,6 +46,7 @@ var (
 	ignores  = []string{}
 	badWords = []string{
 		"ー",
+		"〜",
 		"is",
 		"of",
 		"at",
@@ -55,6 +56,8 @@ var (
 		"me",
 		"a",
 		"and",
+		"/",
+		"RE:",
 	}
 )
 
@@ -190,6 +193,10 @@ func appendWord(word string, t time.Time) {
 	if word == "" {
 		return
 	}
+	if isIgnoreWord(word) {
+		return
+	}
+
 	mu.Lock()
 	fmt.Println("===>", word)
 	words = append(words, Word{
@@ -372,10 +379,6 @@ func collectWords(ev *nostr.Event) {
 		}
 		seen[token.Surface] = struct{}{}
 
-		if isIgnoreWord(token.Surface) {
-			continue
-		}
-
 		cc := token.Features()
 		fmt.Println(cc, token.Surface)
 
@@ -391,7 +394,7 @@ func collectWords(ev *nostr.Event) {
 
 		if cc[0] == "名詞" {
 			if cc[1] == "一般" || cc[1] == "固有名詞" || cc[1] == "サ変接続" || cc[1] == "数" {
-				if !strings.ContainsAny(token.Surface, "()〜/.#*") {
+				if !strings.ContainsAny(token.Surface, "()〜#*") {
 					prev += token.Surface
 					continue
 				}
