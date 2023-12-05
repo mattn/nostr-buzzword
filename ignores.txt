@@ -12,3 +12,4 @@ npub1kguwzdsfrjcpe5skqmdvrgh4q06sfelgulr4mx8ualfs4mggfgwqn52fyc # 甘林老木
 npub1yf3lgamj6aqpm77k7cn9l2e7vrfcy7yaf8zttxqzauwgpnevag6srxkfre # Status of relay.nostr.wirednet.jp
 npub1yfdayudzpzp4y9zj58v4vj5enqw687jae9yc7gtsjwrhy6p9lnyq4fvg3f # Foresight News
 npub1ztfvnuxfaw8c0y4ca794pyfpskwajz3h08c67vy0hfstevweuyrsw0e4ve # NHK NEWS
+npub1f2pt6hez06wxruvfscjgdnw0rqmhwhcukm2dc59y48l3gkmpw08qezvgv8 # AWS News
