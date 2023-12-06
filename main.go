@@ -131,7 +131,7 @@ func publishEvent(wg *sync.WaitGroup, r string, ev nostr.Event, success *atomic.
 	}
 }
 
-func postEvent(nsec string, relays []string, ev *nostr.Event, content string) error {
+func postEvent(nsec string, relays []string, ev *nostr.Event, content string, tags nostr.Tags) error {
 	eev := nostr.Event{}
 	var sk string
 	if _, s, err := nip19.Decode(nsec); err == nil {
@@ -152,6 +152,7 @@ func postEvent(nsec string, relays []string, ev *nostr.Event, content string) er
 	if ev != nil {
 		eev.CreatedAt = ev.CreatedAt + 1
 		eev.Kind = ev.Kind
+		eev.Tags = tags
 		eev.Tags = eev.Tags.AppendUnique(nostr.Tag{"e", ev.ID, "", "reply"})
 		eev.Tags = eev.Tags.AppendUnique(nostr.Tag{"p", ev.PubKey})
 		for _, te := range ev.Tags {
@@ -290,11 +291,13 @@ func makeRanks(full bool) ([]*HotItem, error) {
 
 func postRanks(items []*HotItem, ev *nostr.Event) {
 	var buf bytes.Buffer
+	tags := nostr.Tags{}
 	fmt.Fprint(&buf, "#バズワードランキング\n\n")
 	for i, item := range items {
-		fmt.Fprintf(&buf, "%d位: %s (%d)\n", i+1, item.Word, item.Count)
+		fmt.Fprintf(&buf, "%d位: #%s (%d)\n", i+1, item.Word, item.Count)
+		tags = tags.AppendUnique(nostr.Tag{"t", item.Word})
 	}
-	err := postEvent(os.Getenv("BOT_NSEC"), relays, ev, buf.String())
+	err := postEvent(os.Getenv("BOT_NSEC"), relays, ev, buf.String(), tags)
 	if err != nil {
 		log.Println(err)
 	}
