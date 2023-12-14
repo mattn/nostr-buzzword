@@ -121,12 +121,12 @@ func publishEvent(wg *sync.WaitGroup, r string, ev nostr.Event, success *atomic.
 		log.Println(relay.URL, err)
 		return
 	}
-	status, err := relay.Publish(context.Background(), ev)
+	defer relay.Close()
+
+	err = relay.Publish(context.Background(), ev)
 	if err != nil {
-		log.Println(relay.URL, status, err)
-	}
-	relay.Close()
-	if err == nil && status != nostr.PublishStatusFailed {
+		log.Println(relay.URL, err)
+	} else {
 		success.Add(1)
 	}
 }
