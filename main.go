@@ -304,21 +304,19 @@ func postRanks(items []*HotItem, ev *nostr.Event) {
 }
 
 func server() {
-	relay, err := nostr.RelayConnect(context.Background(), "wss://yabu.me")
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer relay.Close()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	sub, err := relay.Subscribe(context.Background(), []nostr.Filter{{
+	pool := nostr.NewSimplePool(ctx)
+	filters := []nostr.Filter{{
 		Kinds: []int{nostr.KindTextNote, nostr.KindChannelMessage},
-	}})
-	if err != nil {
-		log.Println(err)
-		return
+	}}
+	relays := []string{
+		"wss://yabu.me",
+		"wss://relay-jp.nostr.wirednet.jp",
 	}
-	defer sub.Close()
+	sub := pool.SubMany(ctx, relays, filters)
+	defer close(sub)
 
 	ch := make(chan *nostr.Event, 10)
 	defer close(ch)
@@ -329,42 +327,48 @@ func server() {
 	go collect(&wg, ch)
 
 	retry := 0
-	eose := false
-loop:
+events_loop:
 	for {
 		select {
-		case ev, ok := <-sub.Events:
-			if !ok || ev == nil {
-				break loop
+		case ev, ok := <-sub:
+			if !ok {
+				break events_loop
 			}
 			select {
-			case <-sub.EndOfStoredEvents:
-				eose = true
-			case <-relay.Context().Done():
-				log.Printf("connection closed: %v", relay.Context().Err())
-				break loop
+			case <-ctx.Done():
+				log.Printf("connection closed: %v", ctx.Err())
+				break events_loop
 			default:
 			}
-			json.NewEncoder(os.Stdout).Encode(ev)
-			if eose && strings.TrimSpace(ev.Content) == "バズワードランキング" {
-				// post ranking summary as reply
-				if ranks, err := makeRanks(false); err == nil {
-					postRanks(ranks, ev)
+			json.NewEncoder(os.Stdout).Encode(ev.Event)
+			if strings.TrimSpace(ev.Content) == "バズワードランキング" {
+				if ev.CreatedAt.Time().Sub(time.Now()).Seconds() < 10 {
+					// post ranking summary as reply
+					if ranks, err := makeRanks(false); err == nil {
+						postRanks(ranks, ev.Event)
+					}
+					continue
 				}
-				continue
 			}
 			// otherwise send the ev to goroutine
-			ch <- ev
+			ch <- ev.Event
 			retry = 0
 		case <-time.After(10 * time.Second):
-			if relay.ConnectionError != nil {
-				log.Println(relay.ConnectionError)
-				break loop
+			alive := pool.Relays.Size()
+			pool.Relays.Range(func(key string, relay *nostr.Relay) bool {
+				if relay.ConnectionError != nil {
+					log.Println(relay.ConnectionError, relay.IsConnected())
+					alive--
+				}
+				return true
+			})
+			if alive == 0 {
+				break events_loop
 			}
 			retry++
 			log.Println("Health check", retry)
 			if retry > 60 {
-				break loop
+				break events_loop
 			}
 		}
 	}
