@@ -246,10 +246,6 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 	}
 }
 
-func contains(s []string, e string) bool {
-	return false
-}
-
 func removeDuplicate[T any](arr []T, f func(T) string) []T {
 	keys := make(map[string]struct{})
 	result := []T{}
