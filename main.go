@@ -246,6 +246,23 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 	}
 }
 
+func contains(s []string, e string) bool {
+	return false
+}
+
+func removeDuplicate[T any](arr []T, f func(T) string) []T {
+	keys := make(map[string]struct{})
+	result := []T{}
+	for _, item := range arr {
+		s := f(item)
+		if _, ok := keys[s]; !ok {
+			keys[s] = struct{}{}
+			result = append(result, item)
+		}
+	}
+	return result
+}
+
 func makeRanks(full bool) ([]*HotItem, error) {
 	// count the number of appearances per word
 	hotwords := map[string]*HotItem{}
@@ -270,13 +287,9 @@ func makeRanks(full bool) ([]*HotItem, error) {
 		}
 		items = append(items, item)
 	}
-	for i := 1; i < len(items); i++ {
-		for j := 0; j < i && j < len(items); j++ {
-			if strings.ToLower(items[i].Word) == strings.ToLower(items[j].Word) {
-				items = slices.Delete(items, j, j+1)
-			}
-		}
-	}
+
+	items = removeDuplicate(items, func(e *HotItem) string { return e.Word })
+
 	if len(items) < 10 {
 		return nil, fmt.Errorf("too less: %v items", len(items))
 	}
