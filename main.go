@@ -264,10 +264,11 @@ func makeRanks(full bool) ([]*HotItem, error) {
 	hotwords := map[string]*HotItem{}
 	mu.Lock()
 	for _, word := range words {
-		if i, ok := hotwords[word.Content]; ok {
+		content := strings.ToLower(word.Content)
+		if i, ok := hotwords[content]; ok {
 			i.Count++
 		} else {
-			hotwords[word.Content] = &HotItem{
+			hotwords[content] = &HotItem{
 				Word:  word.Content,
 				Count: 1,
 			}
