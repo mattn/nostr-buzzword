@@ -28,7 +28,7 @@ import (
 
 const name = "nostr-buzzword"
 
-const version = "0.0.59"
+const version = "0.0.60"
 
 var revision = "HEAD"
 
