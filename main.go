@@ -9,6 +9,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"slices"
@@ -313,6 +314,15 @@ func postRanks(items []*HotItem, ev *nostr.Event) {
 	}
 }
 
+func heartbeatPush(url string) {
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+	defer resp.Body.Close()
+}
+
 func server() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -330,6 +340,9 @@ func server() {
 
 	ch := make(chan *nostr.Event, 10)
 	defer close(ch)
+
+	hbtimer := time.NewTicker(5 * time.Minute)
+	defer hbtimer.Stop()
 
 	var wg sync.WaitGroup
 
@@ -363,6 +376,10 @@ events_loop:
 			// otherwise send the ev to goroutine
 			ch <- ev.Event
 			retry = 0
+		case <-hbtimer.C:
+			if url := os.Getenv("HEARTBEAT_URL"); url != "" {
+				go heartbeatPush(url)
+			}
 		case <-time.After(10 * time.Second):
 			alive := pool.Relays.Size()
 			pool.Relays.Range(func(key string, relay *nostr.Relay) bool {
