@@ -341,7 +341,6 @@ func server() {
 	ch := make(chan *nostr.Event, 10)
 	defer close(ch)
 
-	println(os.Getenv("HEARTBEAT_URL"))
 	hbtimer := time.NewTicker(5 * time.Minute)
 	defer hbtimer.Stop()
 
