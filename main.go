@@ -226,14 +226,17 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 		select {
 		case ev = <-ch:
 			if ev == nil {
+				log.Printf("Stoped reading events")
 				return
 			}
 		case <-summarizer.C:
+			log.Printf("Run Summarizer")
 			if ranks, err := makeRanks(false); err == nil {
 				postRanks(ranks, nil)
 			}
 			continue
 		case <-deleter.C:
+			log.Printf("Run Deleter")
 			now := time.Now()
 			mu.Lock()
 			words = slices.DeleteFunc(words, func(word Word) bool {
