@@ -416,6 +416,7 @@ func collectWords(ev *nostr.Event) {
 	tokens := t.Tokenize(normalize(ev.Content))
 	seen := map[string]struct{}{}
 	prev := ""
+	prevprev := ""
 	for _, token := range tokens {
 		cc := token.Features()
 		fmt.Println(cc, token.Surface)
@@ -437,8 +438,11 @@ func collectWords(ev *nostr.Event) {
 		}
 
 		if cc[0] == "名詞" {
+			if prev == "" && prevprev != "" {
+				prev = prevprev
+			}
 			if cc[1] == "一般" || cc[1] == "固有名詞" || cc[1] == "サ変接続" || cc[1] == "数" {
-				if !strings.ContainsAny(token.Surface, "()〜#*") {
+				if !strings.ContainsAny(token.Surface, "()〜#*/") {
 					prev += token.Surface
 					continue
 				}
@@ -448,11 +452,16 @@ func collectWords(ev *nostr.Event) {
 				continue
 			}
 		} else if cc[0] == "カスタム名詞" {
+			if prev == "" && prevprev != "" {
+				prev = prevprev
+			}
 			prev += token.Surface
 			continue
 		} else if cc[0] == "助詞" && cc[1] == "接尾" {
 			prev += token.Surface
 			continue
+		} else if cc[0] == "形容詞" {
+			prevprev = token.Surface
 		}
 
 		appendWord(prev, ev.CreatedAt.Time())
