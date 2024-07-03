@@ -143,7 +143,7 @@ func postRanks(nsec string, items []*HotItem, relays []string, ev *nostr.Event) 
 	for i, item := range items {
 		fmt.Fprintf(&buf, "%d位: #%s (%d)\n", i+1, item.Word, item.Count)
 		tags = tags.AppendUnique(nostr.Tag{"t", item.Word})
-		if i > 9 {
+		if i >= 9 {
 			break
 		}
 	}
