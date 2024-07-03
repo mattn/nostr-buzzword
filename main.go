@@ -341,6 +341,9 @@ func makeWordCloud(items []*HotItem, sign func(*nostr.Event) error) (string, err
 
 	inputWords := map[string]int{}
 	for _, item := range items {
+		if item.Count <= 1 {
+			continue
+		}
 		inputWords[item.Word] = item.Count
 	}
 	img := wordclouds.NewWordcloud(inputWords,
