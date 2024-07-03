@@ -17,4 +17,5 @@ COPY --link --from=build-dev /go/src/app/Koruri-Regular.ttf /go/bin/Koruri-Regul
 COPY --from=build-dev /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 ENV USERDIC=/go/bin/userdic.txt
 ENV IGNORES=/go/bin/ignores.txt
+ENV FONTFILE=/go/bin/Koruri-Regular.ttf
 CMD ["/go/bin/nostr-buzzword"]

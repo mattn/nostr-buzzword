@@ -344,7 +344,7 @@ func makeWordCloud(items []*HotItem, sign func(*nostr.Event) error) (string, err
 		inputWords[item.Word] = item.Count
 	}
 	img := wordclouds.NewWordcloud(inputWords,
-		wordclouds.FontFile("Koruri-Regular.ttf"),
+		wordclouds.FontFile(env("FONTFILE", "Koruri-Regular.ttf")),
 		wordclouds.FontMaxSize(100),
 		wordclouds.FontMinSize(10),
 		wordclouds.Colors(colors),
