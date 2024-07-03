@@ -457,7 +457,7 @@ func collectWords(ev *nostr.Event) {
 			}
 			prev += token.Surface
 			continue
-		} else if cc[0] == "助詞" && cc[1] == "接尾" {
+		} else if prev != "" && cc[0] == "助詞" && cc[1] == "接尾" {
 			prev += token.Surface
 			continue
 		} else if cc[0] == "形容詞" {
