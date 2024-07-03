@@ -459,6 +459,15 @@ events_loop:
 	wg.Wait()
 }
 
+func join(lhs, rhs string) string {
+	lhre := regexp.MustCompile(`\w$`).MatchString(lhs)
+	rhre := regexp.MustCompile(`^\w`).MatchString(rhs)
+	if lhre && rhre {
+		return lhs + " " + rhs
+	}
+	return lhs + rhs
+}
+
 func collectWords(ev *nostr.Event) {
 	// check ignored npub
 	if isIgnoreNpub(ev.PubKey) {
@@ -497,22 +506,22 @@ func collectWords(ev *nostr.Event) {
 			}
 			if cc[1] == "一般" || cc[1] == "固有名詞" || cc[1] == "サ変接続" || cc[1] == "数" {
 				if !strings.ContainsAny(token.Surface, "()〜#*/") {
-					prev += token.Surface
+					prev = join(prev, token.Surface)
 					continue
 				}
 			}
 			if prev != "" && cc[1] == "接尾" {
-				prev += token.Surface
+				prev = join(prev, token.Surface)
 				continue
 			}
 		} else if cc[0] == "カスタム名詞" {
 			if prev == "" && prevprev != "" {
 				prev = prevprev
 			}
-			prev += token.Surface
+			prev = join(prev, token.Surface)
 			continue
 		} else if prev != "" && cc[0] == "助詞" && cc[1] == "接尾" {
-			prev += token.Surface
+			prev = join(prev, token.Surface)
 			continue
 		} else if cc[0] == "形容詞" {
 			prevprev = token.Surface
@@ -522,7 +531,6 @@ func collectWords(ev *nostr.Event) {
 		prev = ""
 	}
 	appendWord(prev, ev.CreatedAt.Time())
-	prev = ""
 }
 
 func test() {
