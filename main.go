@@ -453,9 +453,6 @@ func collectWords(ev *nostr.Event) {
 		} else if cc[0] == "助詞" && cc[1] == "接尾" {
 			prev += token.Surface
 			continue
-		} else if cc[0] == "形容詞" {
-			prev += token.Surface
-			continue
 		}
 
 		appendWord(prev, ev.CreatedAt.Time())
