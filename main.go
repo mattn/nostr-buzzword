@@ -8,6 +8,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"image/color"
+	"image/png"
 	"log"
 	"net/http"
 	"os"
@@ -22,8 +24,10 @@ import (
 	"github.com/ikawaha/kagome-dict-ipa-neologd"
 	"github.com/ikawaha/kagome-dict/dict"
 	"github.com/ikawaha/kagome/v2/tokenizer"
+	"github.com/mattn/go-nostrbuild"
 	nostr "github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip19"
+	"github.com/psykhi/wordclouds"
 )
 
 const name = "nostr-buzzword"
@@ -132,7 +136,15 @@ func publishEvent(wg *sync.WaitGroup, r string, ev nostr.Event, success *atomic.
 	}
 }
 
-func postEvent(nsec string, relays []string, ev *nostr.Event, content string, tags nostr.Tags) error {
+func postRanks(nsec string, items []*HotItem, relays []string, ev *nostr.Event) error {
+	var buf bytes.Buffer
+	tags := nostr.Tags{}
+	fmt.Fprint(&buf, "#バズワードランキング\n\n")
+	for i, item := range items {
+		fmt.Fprintf(&buf, "%d位: #%s (%d)\n", i+1, item.Word, item.Count)
+		tags = tags.AppendUnique(nostr.Tag{"t", item.Word})
+	}
+
 	eev := nostr.Event{}
 	var sk string
 	if _, s, err := nip19.Decode(nsec); err == nil {
@@ -149,7 +161,19 @@ func postEvent(nsec string, relays []string, ev *nostr.Event, content string, ta
 		return err
 	}
 
-	eev.Content = content
+	if ev != nil {
+		sign := func(ev *nostr.Event) error {
+			ev.PubKey = eev.PubKey
+			return ev.Sign(sk)
+		}
+		img, err := makeWordCloud(items, sign)
+		if err != nil {
+			return err
+		}
+		fmt.Fprint(&buf, "\n"+img)
+	}
+
+	eev.Content = buf.String()
 	if ev != nil {
 		eev.CreatedAt = ev.CreatedAt + 1
 		eev.Kind = ev.Kind
@@ -232,7 +256,10 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 		case <-summarizer.C:
 			log.Printf("Run Summarizer")
 			if ranks, err := makeRanks(false); err == nil {
-				postRanks(ranks, nil)
+				err := postRanks(os.Getenv("BOT_NSEC"), ranks, relays, nil)
+				if err != nil {
+					log.Println(err)
+				}
 			}
 			continue
 		case <-deleter.C:
@@ -283,7 +310,7 @@ func makeRanks(full bool) ([]*HotItem, error) {
 	// make list of items to sort
 	items := []*HotItem{}
 	for _, item := range hotwords {
-		if item.Count < 3 {
+		if item.Count < 3 && !full {
 			continue
 		}
 		items = append(items, item)
@@ -303,18 +330,42 @@ func makeRanks(full bool) ([]*HotItem, error) {
 	return items, nil
 }
 
-func postRanks(items []*HotItem, ev *nostr.Event) {
+func makeWordCloud(items []*HotItem, sign func(*nostr.Event) error) (string, error) {
+	colors := []color.Color{
+		color.RGBA{0x1b, 0x1b, 0x1b, 0xff},
+		color.RGBA{0x48, 0x48, 0x4B, 0xff},
+		color.RGBA{0x59, 0x3a, 0xee, 0xff},
+		color.RGBA{0x65, 0xCD, 0xFA, 0xff},
+		color.RGBA{0x70, 0xD6, 0xBF, 0xff},
+	}
+
+	inputWords := map[string]int{}
+	for _, item := range items {
+		inputWords[item.Word] = item.Count
+	}
+	img := wordclouds.NewWordcloud(inputWords,
+		wordclouds.FontFile("Koruri-Regular.ttf"),
+		wordclouds.FontMaxSize(100),
+		wordclouds.FontMinSize(10),
+		wordclouds.Colors(colors),
+		wordclouds.Height(800),
+		wordclouds.Width(800),
+		wordclouds.RandomPlacement(false),
+		wordclouds.BackgroundColor(color.RGBA{255, 255, 255, 255}),
+		wordclouds.WordSizeFunction("linear"),
+	).Draw()
+
 	var buf bytes.Buffer
-	tags := nostr.Tags{}
-	fmt.Fprint(&buf, "#バズワードランキング\n\n")
-	for i, item := range items {
-		fmt.Fprintf(&buf, "%d位: #%s (%d)\n", i+1, item.Word, item.Count)
-		tags = tags.AppendUnique(nostr.Tag{"t", item.Word})
-	}
-	err := postEvent(os.Getenv("BOT_NSEC"), relays, ev, buf.String(), tags)
+	err := png.Encode(&buf, img)
 	if err != nil {
-		log.Println(err)
+		return "", err
 	}
+
+	result, err := nostrbuild.Upload(&buf, sign)
+	if err != nil {
+		return "", err
+	}
+	return result.Data[0].URL, nil
 }
 
 func heartbeatPush(url string) {
@@ -370,8 +421,11 @@ events_loop:
 			if strings.TrimSpace(ev.Content) == "バズワードランキング" {
 				if ev.CreatedAt.Time().Sub(time.Now()).Seconds() < 10 {
 					// post ranking summary as reply
-					if ranks, err := makeRanks(false); err == nil {
-						postRanks(ranks, ev.Event)
+					if ranks, err := makeRanks(true); err == nil {
+						err := postRanks(os.Getenv("BOT_NSEC"), ranks, relays, ev.Event)
+						if err != nil {
+							log.Println(err)
+						}
 					}
 					continue
 				}

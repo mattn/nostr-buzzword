@@ -26,6 +26,8 @@ If you would like to use user dictionary to use customized tokenizer, set $USERD
 
 MIT
 
+Koruri-Regular.ttf is provided from https://koruri.github.io/
+
 ## Author
 
 Yasuhiro Matsumoto (a.k.a. mattn)
