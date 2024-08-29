@@ -70,6 +70,7 @@ var (
 type Word struct {
 	Content string
 	Time    time.Time
+	Where   string
 }
 
 // HotItem is structure of hot item
@@ -218,7 +219,7 @@ func isIgnoreNpub(pub string) bool {
 	})
 }
 
-func appendWord(word string, t time.Time) {
+func appendWord(where string, word string, t time.Time) {
 	if word == "" {
 		return
 	}
@@ -231,6 +232,7 @@ func appendWord(word string, t time.Time) {
 	words = append(words, Word{
 		Content: word,
 		Time:    t,
+		Where:   where,
 	})
 	if len(words) > 1000 {
 		words = words[1:]
@@ -258,7 +260,7 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 			}
 		case <-summarizer.C:
 			log.Printf("Run Summarizer")
-			if ranks, err := makeRanks(false); err == nil {
+			if ranks, err := makeRanks(""); err == nil {
 				err := postRanks(os.Getenv("BOT_NSEC"), ranks, relays, nil)
 				if err != nil {
 					log.Println(err)
@@ -293,11 +295,23 @@ func removeDuplicate[T any](arr []T, f func(T) string) []T {
 	return result
 }
 
-func makeRanks(full bool) ([]*HotItem, error) {
+func findWhere(ev *nostr.Event) string {
+	for _, tag := range ev.Tags {
+		if len(tag) == 4 && tag[0] == "e" && tag[3] == "root" {
+			return tag[1]
+		}
+	}
+	return ""
+}
+
+func makeRanks(where string) ([]*HotItem, error) {
 	// count the number of appearances per word
 	hotwords := map[string]*HotItem{}
 	mu.Lock()
 	for _, word := range words {
+		if word.Where != where {
+			continue
+		}
 		content := strings.ToLower(word.Content)
 		if i, ok := hotwords[content]; ok {
 			i.Count++
@@ -313,7 +327,7 @@ func makeRanks(full bool) ([]*HotItem, error) {
 	// make list of items to sort
 	items := []*HotItem{}
 	for _, item := range hotwords {
-		if item.Count < 3 && !full {
+		if item.Count < 3 {
 			continue
 		}
 		items = append(items, item)
@@ -424,7 +438,8 @@ events_loop:
 			if strings.TrimSpace(ev.Content) == "バズワードランキング" {
 				if ev.CreatedAt.Time().Sub(time.Now()).Seconds() < 10 {
 					// post ranking summary as reply
-					if ranks, err := makeRanks(true); err == nil {
+
+					if ranks, err := makeRanks(findWhere(ev.Event)); err == nil {
 						err := postRanks(os.Getenv("BOT_NSEC"), ranks, relays, ev.Event)
 						if err != nil {
 							log.Println(err)
@@ -483,6 +498,8 @@ func collectWords(ev *nostr.Event) {
 	seen := map[string]struct{}{}
 	prev := ""
 	prevprev := ""
+	where := findWhere(ev)
+
 	for _, token := range tokens {
 		cc := token.Features()
 		fmt.Println(cc, token.Surface)
@@ -498,7 +515,7 @@ func collectWords(ev *nostr.Event) {
 			continue
 		}
 		if isSymbolWord(d, cc) {
-			appendWord(prev, ev.CreatedAt.Time())
+			appendWord(where, prev, ev.CreatedAt.Time())
 			prev = ""
 			continue
 		}
@@ -530,10 +547,10 @@ func collectWords(ev *nostr.Event) {
 			prevprev = token.Surface
 		}
 
-		appendWord(prev, ev.CreatedAt.Time())
+		appendWord(where, prev, ev.CreatedAt.Time())
 		prev = ""
 	}
-	appendWord(prev, ev.CreatedAt.Time())
+	appendWord(where, prev, ev.CreatedAt.Time())
 }
 
 func test() {
@@ -548,7 +565,7 @@ func test() {
 		collectWords(&ev)
 	}
 
-	items, err := makeRanks(true)
+	items, err := makeRanks("")
 	if err != nil {
 		log.Fatal(err)
 	}
