@@ -49,7 +49,7 @@ var (
 	}
 
 	ignores  = []string{}
-	badWords = []string{
+	badwords = []string{
 		"ー",
 		"〜",
 		"is",
@@ -95,7 +95,7 @@ func normalize(s string) string {
 }
 
 func isIgnoreWord(s string) bool {
-	return slices.Contains(badWords, s)
+	return slices.Contains(badwords, s)
 }
 
 func isWhiteSpace(d *dict.Dict, c []string) bool {
@@ -585,9 +585,11 @@ func main() {
 	var ver, tt bool
 	var ignoresFile string
 	var userdicFile string
+	var badwordsFile string
 	flag.BoolVar(&tt, "t", false, "test")
 	flag.BoolVar(&ver, "version", false, "show version")
 	flag.StringVar(&ignoresFile, "ignores", env("IGNORES", "ignores.txt"), "path to ignores.txt")
+	flag.StringVar(&badwordsFile, "badwords", env("BADWORDS", "badwords.txt"), "path to badwords.txt")
 	flag.StringVar(&userdicFile, "userdic", env("USERDIC", "userdic.txt"), "path to userdic.txt")
 	flag.Parse()
 
@@ -625,6 +627,18 @@ func main() {
 			if len(tok) >= 1 {
 				ignores = append(ignores, tok[0])
 			}
+		}
+	}
+
+	// load badwords.txt
+	f, err = os.Open(badwordsFile)
+	if err == nil {
+		defer f.Close()
+
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			text := scanner.Text()
+			badwords = append(badwords, text)
 		}
 	}
 
