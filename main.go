@@ -182,7 +182,7 @@ func postRanks(nsec string, items []*HotItem, relays []string, ev *nostr.Event) 
 		eev.CreatedAt = ev.CreatedAt + 1
 		eev.Kind = ev.Kind
 		eev.Tags = tags
-		eev.Tags = eev.Tags.AppendUnique(nostr.Tag{"e", ev.ID, "", "reply"})
+		eev.Tags = eev.Tags.AppendUnique(nostr.Tag{"e", ev.ID, "", "root"})
 		eev.Tags = eev.Tags.AppendUnique(nostr.Tag{"p", ev.PubKey})
 		for _, te := range ev.Tags {
 			if te.Key() == "e" {
