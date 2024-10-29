@@ -1,3 +1,10 @@
 secret.yaml
-k8s
+nostr-buzzword
+nostr-buzzword.exe
 test.sh
+backup
+*.json
+k8s
+*.sh
+*.bat
+*.cmd
