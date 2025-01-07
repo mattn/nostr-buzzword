@@ -113,3 +113,4 @@ npub1zlq2x8hck0uvlupf55mavxzzwpf2plkgd3rdqvwnk8fz02pvmgkqk344zr # TESTNET•ENG�
 npub1ztfvnuxfaw8c0y4ca794pyfpskwajz3h08c67vy0hfstevweuyrsw0e4ve # 新着ニュース
 npub1zwd3a5phvnqsu7ttjqkndd2arqspd7trltw52jxfnrppsuhkdv5q75tfh5 # 🚃鉄道運行情報(関東)
 npub1c3k3a6nf4u2nme0jsgdvj4t9dqzgdr8aj0nglr88q9nltdtqh49sehml6g # NHKニュース
+npub1qzqsm64qe0ju82kdlxk6ual5f57rcdfxt9kg9e6x0t8kjzgtlz6s3ufm9a # シラス@QZQSM
