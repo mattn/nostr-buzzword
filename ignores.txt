@@ -114,3 +114,5 @@ npub1ztfvnuxfaw8c0y4ca794pyfpskwajz3h08c67vy0hfstevweuyrsw0e4ve # 新着ニュ�
 npub1zwd3a5phvnqsu7ttjqkndd2arqspd7trltw52jxfnrppsuhkdv5q75tfh5 # 🚃鉄道運行情報(関東)
 npub1c3k3a6nf4u2nme0jsgdvj4t9dqzgdr8aj0nglr88q9nltdtqh49sehml6g # NHKニュース
 npub1qzqsm64qe0ju82kdlxk6ual5f57rcdfxt9kg9e6x0t8kjzgtlz6s3ufm9a # シラス@QZQSM
+npub1fgl20prs9s7ejrh0udadywd8c7q9x2ah0hu7auq32un4zg22xpdsj6q8xm # てすたろう
+npub1vunr7c6v9ed8v6qg2dz5w8xaha4c52vumq745zhhv6rtlv0vu44suj8sw9 # nostarou
