@@ -116,3 +116,4 @@ npub1c3k3a6nf4u2nme0jsgdvj4t9dqzgdr8aj0nglr88q9nltdtqh49sehml6g # NHKニュー�
 npub1qzqsm64qe0ju82kdlxk6ual5f57rcdfxt9kg9e6x0t8kjzgtlz6s3ufm9a # シラス@QZQSM
 npub1fgl20prs9s7ejrh0udadywd8c7q9x2ah0hu7auq32un4zg22xpdsj6q8xm # てすたろう
 npub1vunr7c6v9ed8v6qg2dz5w8xaha4c52vumq745zhhv6rtlv0vu44suj8sw9 # nostarou
+npub17wzc932fhtgjhxuy057er0wtpxe5nx2jy4hfjxlj6mw3ka0vw7fs6qkdf5 # おじさん
