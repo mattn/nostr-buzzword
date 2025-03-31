@@ -3,6 +3,7 @@ npub10u3f6y43se8r04vmdlukgyqhphxfcjyeujkrtnufghua6qlwgemqkpsg59 # Kieran Halstea
 npub120hur8kpufu44h6qll50ywaesxk2qxvek295hm4x0ur7cgqj8jvq7pqksp # 不審者情報
 npub13ju2rwqye3ayslwd3wg025zzejsvx3nuzsqce4rm3m6u2cemtv7q2sj7ku # Quinn Holloway
 npub13m8de70e6jr22np6elxqckgfpu7hszaduk867rmwhzpe2j3a2g2sh7qde2 # TESTNET•GIT•BAK
+npub14cklgree5w09ju4f36dw55rgn78gzy4an6pnjcsz48ttjw7v050sv5jptq # GaySexSpyVoyeur(NSFW🔞)
 npub14htwadwsnle0d227mptfy6r7pcwl7scs3dhwvnmagd8u7s5rg6vslde86r # wordcloud
 npub150qnaaxfan8auqdajvn292cgk2khm3tl8dmakamj878z44a6yntqk7uktv # 流速ちゃん
 npub15a220cqt23ge29kjv67rhjs09l4ly268afpar0vruk2dkd09t3fqllpe6f # Nolan Grafton
@@ -16,6 +17,7 @@ npub173d4h25f4c88lapyr2z8qg5r08suvp275ukm99quh4g2eaf064eqwn96cf # Elliot Hargrov
 npub17a50460j8y99yglsqzjzfh4exq4f8q0r82ackzzv4pz0dyd3rnwsxc9tp2 # Buzz Word
 npub17kku5ufc0mg4ggr7hha6k43n4ka4sx2ss0kkedqpy893s40nl3tqf7pmr7 # Hugo Haverford
 npub17qqekpej52c6wqmqlw84mkmlgp2ylz6xkryj3ccqk5vld4f7clys047uwf # Markov Chain
+npub17wzc932fhtgjhxuy057er0wtpxe5nx2jy4hfjxlj6mw3ka0vw7fs6qkdf5 # おじさん
 npub1823chanrkmyrfgz2v4pwmu22s8fjy0s9ps7vnd68n7xgd8zr9neqlc2e5r # やぶみちゃん
 npub189hufx897x3rvtew0apa8frkf4rzl9g73zsd5auwzlyk9furyeyszv7wum # Jasper Haldin
 npub18ee7ggjpp4uf77aurecqhtfpz5y0j95pd9hadrdsxt5we3pysnnqe8k224 # びー
@@ -24,6 +26,7 @@ npub1928muzt54mqmhhqj450ga3h4sqp6glnmt3athluu63eslrn457lqj7aqzk # Gwen Jaskolka
 npub19we2h0793y4hhk500r2ndqkez0xf53rtghs3j20sjdwclh7tgz7s36kl6t # うにゅう
 npub1aau9auxpfzu6l856xh9knmluapfk7f7suys8wkm53khgqwaljq2qg4x7qf # Tara Huxley
 npub1ag7r8dpf6dwhn45eq08dhpajjla6gy26lw2z4qnx26359l5m4evstutdgs # Clara Jennings
+npub1c3k3a6nf4u2nme0jsgdvj4t9dqzgdr8aj0nglr88q9nltdtqh49sehml6g # NHKニュース
 npub1chadadwep45t4l7xx9z45p72xsxv7833zyy4tctdgh44lpc50nvsrjex2m # Ostrich-70
 npub1chunacswmcejn8ge95vzl22a2g6pd4nfchygslnt9gj9dshqcvqq5amrlj # チュンチュン
 npub1cktfz62n0gf098mq7c4np4g35s6ex42p30ae5ar8d2w32zd24kdqa3j6m7 # React Reference Bot
@@ -37,6 +40,7 @@ npub1f2pt6hez06wxruvfscjgdnw0rqmhwhcukm2dc59y48l3gkmpw08qezvgv8 # AWS News Bot J
 npub1f6rvmwc76arl7sxx2vparlzx8cg2ajc3xpymqh7yx97znccue2hs5mkavc # ぬるぽ・ｶﾞｯ
 npub1f9wu4uxlg8ww2vcdsh8q5tfyczddc0l2jcq906rs4627hcdutrhqd5a233 # TESTNET•ENG•BAH
 npub1feed6x4yft54j7rwzcap34wxkf7rzpd50ps0vcnp04df3vjs7a5sc2vcgx # うかフィード
+npub1fgl20prs9s7ejrh0udadywd8c7q9x2ah0hu7auq32un4zg22xpdsj6q8xm # てすたろう
 npub1fkvw0qmcr9e0tz5g06szclhjqqdna7xquf7988dmlfzxaxxafwlscwepcs # Warren Greeley
 npub1fqaxs7cce5e4qzu9pewaklf5tjtvyslnx0p9s6jhkmaruw2q3cjs9cs5m6 # プライムビデオ新着
 npub1ft7qy8qrf4huyk48nz0jf7parw3pfjs24az7py80ex8ympnqw6csz85fxu # 俳句bot
@@ -50,6 +54,7 @@ npub1gz5p26mufdevplukc6htqvvn57khf44vt35qgj77hmfdr0zf6q0skyvqty # Lexa
 npub1h3d7tgt4fg05pxwalur0867x24d73yeqa7742n3aj4l4x4m6drxqdkg3n8 # Elara Jernigan
 npub1hmcnd8pr4tnctdemc8gt78yzmqh9utkx6zn95jyr66rr8m7d5t8sknjy08 # The Oracle of Whimsy
 npub1hsd7ns3cedpvjs0fer0dlvrep8umus4nh6xrydf0jyu4mgkfvujskf504s # Olivia Harrow
+npub1hw5u53rvfv05c6p76arrcur2lk9fl35d6qgntxsjazrpue5jsg9q3lehv8 # 宇和さん
 npub1j0ng5hmm7mf47r939zqkpepwekenj6uqhd5x555pn80utevvavjsfgqem2 # 雀卓
 npub1j7qx3jtqnmpafq9vka3wlcdwn49t9syvqje7tqds22u0qden05yspcgq0m # TESTNET•GIT•BAW
 npub1jmgpya42fsqpranfelqvds8u68x92tcy8ew8zgqhuxz79xdwuslsg83zu8 # Ivy Jorvik
@@ -79,6 +84,7 @@ npub1q6ptkv6tlljf58ndalf9pc5vvhqhxl50xwwnjnjqef4dlunusjmqyp7qmf # 今日は何�
 npub1qeqhetz2d6jp3efmkwrjutwmyr9639ulenzrpd3jxpwl97x920gsknk6em # Helia Galenwood
 npub1qtksyetz7z86zv75y4njmeu82ewq326pvq6rgsk7jv0d5g94yzxqdull7u # Ulrich Galloway
 npub1qvc7kkyrsspacgm299qstsvdrhmk5ywjl7jwppq8d5e39zk8762qupm3v4 # Liam Hargrove
+npub1qzqsm64qe0ju82kdlxk6ual5f57rcdfxt9kg9e6x0t8kjzgtlz6s3ufm9a # シラス@QZQSM
 npub1rnrnclxznfkqqu8nnpt0mwp4hj0xe005mnwjqlafaluv7n2kn80sy53aq2 # リンリン
 npub1runc0de8jlttarfj5zaej0qeu6v8vh7446mxc0ncs4cxj0qytkrsqskp0s # I RUN CODE
 npub1shnjrjegvfp48heaw43qgsz44f4uffk50pe4cq73xj5fcmd4qydqy3r4l6 # 小泉進次郎bot
@@ -93,6 +99,7 @@ npub1v20fahsh44msy4ty7amjrcr6v79t6mddkfdtx06mxgrqdzs29ktsgnsdcc # Ava Jorin
 npub1v3yq3kjrz80ghjuxn5c7xk56rnd295ffwzdj3kpe7gj2x7v2gx9qkawmx0 # Nora Havelock
 npub1v75w6lnkc7derm3nvddd45rnl9rxkvh0yyeh8taj7vcdlta8plmqdp2g4e # Golang News
 npub1vjkvlkvx7c5va0n398yhhvs5zc0pcrya3r8cggca8x688ll0eduqjv4qth # Icarus Grimwood
+npub1vunr7c6v9ed8v6qg2dz5w8xaha4c52vumq745zhhv6rtlv0vu44suj8sw9 # nostarou
 npub1w3w2x7zshh046wrzzq5m8c6sh6qmv4wkmw7hq6mzlgq55zxk0nwqcqsvkk # 
 npub1w7g33p5hrljhnl37f7gdnhr7j87dwjzsms59x6qllutk2jepszgs65t8dc # ビットコインの推奨手数料を通知するボット
 npub1wavsw9qaw5unehjx37x23jj972js3vty77aygm2cg6umpue9dp4sad7ejv # TESTNET•GIT•BAG
@@ -112,10 +119,3 @@ npub1z82rzf3uarde84x6ltsxnqg32g4ujny82eyu7w73v6xvmel54fhs74c662 #
 npub1zlq2x8hck0uvlupf55mavxzzwpf2plkgd3rdqvwnk8fz02pvmgkqk344zr # TESTNET•ENG•BAC
 npub1ztfvnuxfaw8c0y4ca794pyfpskwajz3h08c67vy0hfstevweuyrsw0e4ve # 新着ニュース
 npub1zwd3a5phvnqsu7ttjqkndd2arqspd7trltw52jxfnrppsuhkdv5q75tfh5 # 🚃鉄道運行情報(関東)
-npub1c3k3a6nf4u2nme0jsgdvj4t9dqzgdr8aj0nglr88q9nltdtqh49sehml6g # NHKニュース
-npub1qzqsm64qe0ju82kdlxk6ual5f57rcdfxt9kg9e6x0t8kjzgtlz6s3ufm9a # シラス@QZQSM
-npub1fgl20prs9s7ejrh0udadywd8c7q9x2ah0hu7auq32un4zg22xpdsj6q8xm # てすたろう
-npub1vunr7c6v9ed8v6qg2dz5w8xaha4c52vumq745zhhv6rtlv0vu44suj8sw9 # nostarou
-npub17wzc932fhtgjhxuy057er0wtpxe5nx2jy4hfjxlj6mw3ka0vw7fs6qkdf5 # おじさん
-npub14cklgree5w09ju4f36dw55rgn78gzy4an6pnjcsz48ttjw7v050sv5jptq # GaySexSpyVoyeur(NSFW🔞)
-npub1hw5u53rvfv05c6p76arrcur2lk9fl35d6qgntxsjazrpue5jsg9q3lehv8 # 宇和さん
