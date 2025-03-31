@@ -26,7 +26,7 @@ npub1928muzt54mqmhhqj450ga3h4sqp6glnmt3athluu63eslrn457lqj7aqzk # Gwen Jaskolka
 npub19we2h0793y4hhk500r2ndqkez0xf53rtghs3j20sjdwclh7tgz7s36kl6t # うにゅう
 npub1aau9auxpfzu6l856xh9knmluapfk7f7suys8wkm53khgqwaljq2qg4x7qf # Tara Huxley
 npub1ag7r8dpf6dwhn45eq08dhpajjla6gy26lw2z4qnx26359l5m4evstutdgs # Clara Jennings
-npub1c3k3a6nf4u2nme0jsgdvj4t9dqzgdr8aj0nglr88q9nltdtqh49sehml6g # NHKニュース
+npub1c3k3a6nf4u2nme0jsgdvj4t9dqzgdr8aj0nglr88q9nltdtqh49sehml6g # NHKニュース (RSS Feed)
 npub1chadadwep45t4l7xx9z45p72xsxv7833zyy4tctdgh44lpc50nvsrjex2m # Ostrich-70
 npub1chunacswmcejn8ge95vzl22a2g6pd4nfchygslnt9gj9dshqcvqq5amrlj # チュンチュン
 npub1cktfz62n0gf098mq7c4np4g35s6ex42p30ae5ar8d2w32zd24kdqa3j6m7 # React Reference Bot
@@ -82,6 +82,7 @@ npub1psztp4ewrnntks87ehkxeuvx5kpaspnk7hens6ycr3u7uptndsuskn58dc # 名言画像 b
 npub1q34y68sgxy08a9rnzv3cau39y6laskjsy8jw92p6derkahl3kjmq6dpmda # Xena Huxley
 npub1q6ptkv6tlljf58ndalf9pc5vvhqhxl50xwwnjnjqef4dlunusjmqyp7qmf # 今日は何の日
 npub1qeqhetz2d6jp3efmkwrjutwmyr9639ulenzrpd3jxpwl97x920gsknk6em # Helia Galenwood
+npub1qpvchcscwvtxnn4aj4r0ya2lfujmvua76k7rn3mrcap47vjkp5nsu7rcm3 # ノスタコちゃん(bot)
 npub1qtksyetz7z86zv75y4njmeu82ewq326pvq6rgsk7jv0d5g94yzxqdull7u # Ulrich Galloway
 npub1qvc7kkyrsspacgm299qstsvdrhmk5ywjl7jwppq8d5e39zk8762qupm3v4 # Liam Hargrove
 npub1qzqsm64qe0ju82kdlxk6ual5f57rcdfxt9kg9e6x0t8kjzgtlz6s3ufm9a # シラス@QZQSM
@@ -100,7 +101,7 @@ npub1v3yq3kjrz80ghjuxn5c7xk56rnd295ffwzdj3kpe7gj2x7v2gx9qkawmx0 # Nora Havelock
 npub1v75w6lnkc7derm3nvddd45rnl9rxkvh0yyeh8taj7vcdlta8plmqdp2g4e # Golang News
 npub1vjkvlkvx7c5va0n398yhhvs5zc0pcrya3r8cggca8x688ll0eduqjv4qth # Icarus Grimwood
 npub1vunr7c6v9ed8v6qg2dz5w8xaha4c52vumq745zhhv6rtlv0vu44suj8sw9 # nostarou
-npub1w3w2x7zshh046wrzzq5m8c6sh6qmv4wkmw7hq6mzlgq55zxk0nwqcqsvkk # 
+npub1w3w2x7zshh046wrzzq5m8c6sh6qmv4wkmw7hq6mzlgq55zxk0nwqcqsvkk # Felix Harkins
 npub1w7g33p5hrljhnl37f7gdnhr7j87dwjzsms59x6qllutk2jepszgs65t8dc # ビットコインの推奨手数料を通知するボット
 npub1wavsw9qaw5unehjx37x23jj972js3vty77aygm2cg6umpue9dp4sad7ejv # TESTNET•GIT•BAG
 npub1waxx0074rc7pldfw3znwe6ysjp30fehqacdclyc5m75z0ay8gk0qq2gujl # Hot Post Ranking
@@ -109,13 +110,14 @@ npub1whanysx54uf9tgjfeueljg3498kyru3rhwxajwuzh0nw0x0eujss9tlcjh # ホワンホ�
 npub1x6de3sgetyxcuy33gselmusptcas9cwe93rpv642c436qrdzwu0sukyywl # Nyx
 npub1x7ynf6x82x0hjcv9pfyc3e5ydklczh6xle3xchd5wgkry3v5t2nsnpg0xz # Willa Hargrove
 npub1x8x5c2cpyatcanpuqq3zl7wdatxzqm5gssccum4qg3tek4407hasvahs7h # Harlan Quinsy
-npub1x99pfthj7gsfh4nygqrrry2glrjlq52c2sp7lw30tlr78n3qgs3smj6agh # 
+npub1x99pfthj7gsfh4nygqrrry2glrjlq52c2sp7lw30tlr78n3qgs3smj6agh # Zara Hargrove
+npub1xcd3uz43jazshaqty0ephe3xhnqruf7u9m8gjvw5t93j2rmp8sks8tl23l # こていたんえんしゅうぼっと
 npub1xwex5vf0zk2wchupussp4h5gh8p9vs798vry9vlm7y25c8593g3svereh9 # Quirk
 npub1y2zacad0zm7ug9jeqn6w5900h7hmele40dr45a685uw6hxnxkyyqscst94 # Yara Hyland
 npub1yf3lgamj6aqpm77k7cn9l2e7vrfcy7yaf8zttxqzauwgpnevag6srxkfre # Status of relay.nostr.wirednet.jp
 npub1yfdayudzpzp4y9zj58v4vj5enqw687jae9yc7gtsjwrhy6p9lnyq4fvg3f # Foresight News
 npub1z7p7zh6st8rqq3e3clxh4wfym8rqtxz7y2p952lxhl834gd5fgpq5pdkzy # Eldrin
-npub1z82rzf3uarde84x6ltsxnqg32g4ujny82eyu7w73v6xvmel54fhs74c662 # 
+npub1z82rzf3uarde84x6ltsxnqg32g4ujny82eyu7w73v6xvmel54fhs74c662 # Hannah Jorvik
 npub1zlq2x8hck0uvlupf55mavxzzwpf2plkgd3rdqvwnk8fz02pvmgkqk344zr # TESTNET•ENG•BAC
 npub1ztfvnuxfaw8c0y4ca794pyfpskwajz3h08c67vy0hfstevweuyrsw0e4ve # 新着ニュース
 npub1zwd3a5phvnqsu7ttjqkndd2arqspd7trltw52jxfnrppsuhkdv5q75tfh5 # 🚃鉄道運行情報(関東)
