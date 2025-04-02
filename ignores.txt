@@ -1,12 +1,13 @@
 npub107ammg3j2msqmtmwwf7xgfecslnzwnt567x6jwhsa5pvzzzd8ghs9spw02 # Myrion Brightleaf
 npub10u3f6y43se8r04vmdlukgyqhphxfcjyeujkrtnufghua6qlwgemqkpsg59 # Kieran Halstead
 npub120hur8kpufu44h6qll50ywaesxk2qxvek295hm4x0ur7cgqj8jvq7pqksp # 不審者情報
-npub139yaucycwszrr5h9q9n0dej6fsgfxfk2xlnxl46wgtqr0vug9wnsaa6gyk # 
+npub139yaucycwszrr5h9q9n0dej6fsgfxfk2xlnxl46wgtqr0vug9wnsaa6gyk # コピーロボット
 npub13ju2rwqye3ayslwd3wg025zzejsvx3nuzsqce4rm3m6u2cemtv7q2sj7ku # Quinn Holloway
 npub13m8de70e6jr22np6elxqckgfpu7hszaduk867rmwhzpe2j3a2g2sh7qde2 # TESTNET•GIT•BAK
 npub13z3xmpdc0366wnt9valywxxyzmq3373rzgsk7gam02mem74jy95q6ghnlq # ビットバンクプラス マーケット速報
 npub14cklgree5w09ju4f36dw55rgn78gzy4an6pnjcsz48ttjw7v050sv5jptq # GaySexSpyVoyeur(NSFW🔞)
 npub14htwadwsnle0d227mptfy6r7pcwl7scs3dhwvnmagd8u7s5rg6vslde86r # wordcloud
+npub1503k6jatw82tde7kfu3tpkzjzu9mjkdy9wtdc9nafpe7z7ejg8dqla6xt4 # 503 bot
 npub150qnaaxfan8auqdajvn292cgk2khm3tl8dmakamj878z44a6yntqk7uktv # 流速ちゃん
 npub15a220cqt23ge29kjv67rhjs09l4ly268afpar0vruk2dkd09t3fqllpe6f # Nolan Grafton
 npub15klex9f43xty0h7dpp6rsjkhmptwc8wglmvjmaa8rvq30ayp7q6srls9vt # Gizmo Digital
@@ -99,6 +100,7 @@ npub1sm73eqxq0h4mc0ge9ymhkfx5haj6skhjdzh3tndz4n8y2n0kwzlq57nl7v # まいへや
 npub1srtr60ty7pnvjg60la832mjutk86z3vmhvuc02cncme7sutnz4mqxrlt58 # りとりん
 npub1suzskjg4y3r2japuuuek7usaexpa26xnu3g408dexwf2zkacl3ts465k68 # Yahoo!ニュースbot
 npub1ttqyyl8stz9wtj0sn25qp6vah0jdcxwpdtaaxg4efsqkczz7rsxshjpp3x # Mahjong Game
+npub1u6j0u5aakylx0qp2wl8g0rmvfhhlp4vdl8f3g23n8wfqgx4faw5qvsq7z8 # BaronBurdock
 npub1u8yh9vr2dcv20qctut4fy89d73pz2h4vuuyaw5urgppfyt9yqdwq3j6k4m # Darius Huxley
 npub1udeepgra7f9mrmlafp4etzt9zmngh4ty9kzcr8t63fd884w3q55q44nr33 # Milo Grieves
 npub1uds3k0dqcjecsp0qglz5gzjh32z0pulrdnkg84m8e66y4st9kuwqxdyku7 # NutriYogi
