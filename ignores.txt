@@ -120,6 +120,7 @@ npub1v75w6lnkc7derm3nvddd45rnl9rxkvh0yyeh8taj7vcdlta8plmqdp2g4e # Golang News
 npub1vjkvlkvx7c5va0n398yhhvs5zc0pcrya3r8cggca8x688ll0eduqjv4qth # Icarus Grimwood
 npub1vrt2kv03nalz66x5hwj5ezar2ua7vdq08ure3243ly8wwd0kdc7s9qk6yx # 
 npub1vunr7c6v9ed8v6qg2dz5w8xaha4c52vumq745zhhv6rtlv0vu44suj8sw9 # nostarou
+npub1vz7qlc457xxcr2us3zt64gdvss4fnpgm7684vtfafmd7zx26mmcqucr0q9 # #Ralphtan 🦁 / #らる🦁🎗️⚡️♿︎
 npub1w3w2x7zshh046wrzzq5m8c6sh6qmv4wkmw7hq6mzlgq55zxk0nwqcqsvkk # Felix Harkins
 npub1w7g33p5hrljhnl37f7gdnhr7j87dwjzsms59x6qllutk2jepszgs65t8dc # ビットコインの推奨手数料を通知するボット
 npub1wavsw9qaw5unehjx37x23jj972js3vty77aygm2cg6umpue9dp4sad7ejv # TESTNET•GIT•BAG
@@ -133,6 +134,7 @@ npub1x8x5c2cpyatcanpuqq3zl7wdatxzqm5gssccum4qg3tek4407hasvahs7h # Harlan Quinsy
 npub1x99pfthj7gsfh4nygqrrry2glrjlq52c2sp7lw30tlr78n3qgs3smj6agh # Zara Hargrove
 npub1xcd3uz43jazshaqty0ephe3xhnqruf7u9m8gjvw5t93j2rmp8sks8tl23l # こていたんえんしゅうぼっと
 npub1xm9j2a92fzck98kufj2qaddhef27e5vzh3d67ytkvxc9vnfm9h4sd5yqjh # 魔界塔士Bit・Co
+npub1xr4jdgh7htsuraq8y34pufv3kc5mz2h9h0r9lv9a9t0xeuctvp6smrfyy8 #  日本語JLPT文法
 npub1xwex5vf0zk2wchupussp4h5gh8p9vs798vry9vlm7y25c8593g3svereh9 # Quirk
 npub1xzmuglkf5hjk40gd06shr8n5tmuqcwaypqdk6ya2ng6v4waa637savp7s0 # 
 npub1y2zacad0zm7ug9jeqn6w5900h7hmele40dr45a685uw6hxnxkyyqscst94 # Yara Hyland
