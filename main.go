@@ -581,6 +581,10 @@ func env(name string, def string) string {
 	return def
 }
 
+func init() {
+	time.Local = time.FixedZone("Local", 9*60*60)
+}
+
 func main() {
 	var ver, tt bool
 	var ignoresFile string
