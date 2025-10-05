@@ -265,6 +265,8 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 				if err != nil {
 					log.Println(err)
 				}
+			} else {
+				log.Println(err)
 			}
 			continue
 		case <-deleter.C:
