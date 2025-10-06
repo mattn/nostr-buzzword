@@ -46,6 +46,7 @@ var (
 		"wss://yabu.me",
 		"wss://relay.nostr.band",
 		"wss://nos.lol",
+		"wss://nostr.compile-error.net",
 	}
 
 	ignores  = []string{}
