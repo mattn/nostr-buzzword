@@ -1,6 +1,6 @@
 module github.com/mattn/nostr-buzzword
 
-go 1.24.1
+go 1.25.0
 
 require (
 	github.com/ikawaha/kagome-dict v1.1.6
