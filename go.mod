@@ -7,7 +7,7 @@ require (
 	github.com/ikawaha/kagome-dict-ipa-neologd v0.3.2
 	github.com/ikawaha/kagome/v2 v2.10.2
 	github.com/mattn/go-nostrbuild v0.0.10
-	github.com/nbd-wtf/go-nostr v0.52.2
+	github.com/nbd-wtf/go-nostr v0.52.3
 	github.com/psykhi/wordclouds v0.0.0-20231014190151-b9dd58fabbef
 )
 
@@ -38,7 +38,7 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	golang.org/x/arch v0.23.0 // indirect
-	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
-	golang.org/x/image v0.32.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
+	golang.org/x/image v0.34.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
 )
