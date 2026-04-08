@@ -229,7 +229,6 @@ func appendWord(where string, word string, t time.Time) {
 	}
 
 	mu.Lock()
-	fmt.Println("===>", word)
 	words = append(words, Word{
 		Content: word,
 		Time:    t,
@@ -418,6 +417,9 @@ func server() {
 	hbtimer := time.NewTicker(5 * time.Minute)
 	defer hbtimer.Stop()
 
+	hctimer := time.NewTicker(10 * time.Second)
+	defer hctimer.Stop()
+
 	var wg sync.WaitGroup
 
 	wg.Add(1)
@@ -458,7 +460,7 @@ events_loop:
 			if url := os.Getenv("HEARTBEAT_URL"); url != "" {
 				go heartbeatPush(url)
 			}
-		case <-time.After(10 * time.Second):
+		case <-hctimer.C:
 			alive := pool.Relays.Size()
 			pool.Relays.Range(func(key string, relay *nostr.Relay) bool {
 				if relay.ConnectionError != nil {
@@ -505,7 +507,6 @@ func collectWords(ev *nostr.Event) {
 
 	for _, token := range tokens {
 		cc := token.Features()
-		fmt.Println(cc, token.Surface)
 
 		if _, ok := seen[token.Surface]; ok {
 			// ignore word seen
