@@ -45,7 +45,7 @@ var (
 	relays = []string{
 		"wss://relay-jp.nostr.wirednet.jp",
 		"wss://yabu.me",
-		"wss://relay.nostr.band",
+		//"wss://relay.nostr.band",
 		"wss://nos.lol",
 		"wss://nostr.compile-error.net",
 	}
