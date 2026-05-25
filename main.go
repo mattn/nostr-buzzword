@@ -26,6 +26,7 @@ import (
 	"github.com/ikawaha/kagome/v2/tokenizer"
 	"github.com/mattn/go-nostrbuild"
 	nostr "github.com/nbd-wtf/go-nostr"
+	"github.com/nbd-wtf/go-nostr/nip05"
 	"github.com/nbd-wtf/go-nostr/nip19"
 	"github.com/psykhi/wordclouds"
 )
@@ -85,6 +86,15 @@ var (
 	t     *tokenizer.Tokenizer
 	mu    sync.Mutex
 	words []Word
+)
+
+var (
+	nip05Pool      *nostr.SimplePool
+	nip05PoolOnce  sync.Once
+	verifyMu       sync.Mutex
+	verifiedAuthor = map[string]bool{}
+	verifyInFlight = map[string]bool{}
+	skipNip05      bool
 )
 
 func normalize(s string) string {
@@ -208,6 +218,74 @@ func postRanks(nsec string, items []*HotItem, relays []string, ev *nostr.Event) 
 		return errors.New("failed to publish")
 	}
 	return nil
+}
+
+func getNip05Pool() *nostr.SimplePool {
+	nip05PoolOnce.Do(func() {
+		nip05Pool = nostr.NewSimplePool(context.Background())
+	})
+	return nip05Pool
+}
+
+// isVerifiedAuthor reports whether the author's NIP-05 has been verified to
+// resolve back to the same pubkey. The first call for a new pubkey kicks off
+// an asynchronous verification and returns false; subsequent calls return the
+// cached result.
+func isVerifiedAuthor(pubkey string) bool {
+	if skipNip05 {
+		return true
+	}
+	verifyMu.Lock()
+	if v, ok := verifiedAuthor[pubkey]; ok {
+		verifyMu.Unlock()
+		return v
+	}
+	if verifyInFlight[pubkey] {
+		verifyMu.Unlock()
+		return false
+	}
+	verifyInFlight[pubkey] = true
+	verifyMu.Unlock()
+
+	go func() {
+		v := verifyNip05Author(pubkey)
+		verifyMu.Lock()
+		verifiedAuthor[pubkey] = v
+		delete(verifyInFlight, pubkey)
+		verifyMu.Unlock()
+	}()
+	return false
+}
+
+// verifyNip05Author fetches kind:0 metadata for pubkey and verifies that the
+// NIP-05 identifier in the profile resolves back to the same pubkey.
+func verifyNip05Author(pubkey string) bool {
+	ctx := context.Background()
+	metaCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	re := getNip05Pool().QuerySingle(metaCtx, relays, nostr.Filter{
+		Kinds:   []int{nostr.KindProfileMetadata},
+		Authors: []string{pubkey},
+	})
+	if re == nil {
+		return false
+	}
+	var profile struct {
+		Nip05 string `json:"nip05"`
+	}
+	if err := json.Unmarshal([]byte(re.Event.Content), &profile); err != nil {
+		return false
+	}
+	if profile.Nip05 == "" {
+		return false
+	}
+	qCtx, qCancel := context.WithTimeout(ctx, 5*time.Second)
+	defer qCancel()
+	pp, err := nip05.QueryIdentifier(qCtx, profile.Nip05)
+	if err != nil || pp == nil {
+		return false
+	}
+	return pp.PublicKey == pubkey
 }
 
 func isIgnoreNpub(pub string) bool {
@@ -496,6 +574,10 @@ func collectWords(ev *nostr.Event) {
 	if isIgnoreNpub(ev.PubKey) {
 		return
 	}
+	// drop events from authors whose NIP-05 has not been verified
+	if !isVerifiedAuthor(ev.PubKey) {
+		return
+	}
 	if strings.ContainsAny(ev.Content, " \t\n") && !reJapanese.MatchString(ev.Content) {
 		return
 	}
@@ -558,6 +640,7 @@ func collectWords(ev *nostr.Event) {
 }
 
 func test() {
+	skipNip05 = true
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		var ev nostr.Event
