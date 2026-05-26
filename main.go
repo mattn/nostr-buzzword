@@ -73,6 +73,7 @@ type Word struct {
 	Content string
 	Time    time.Time
 	Where   string
+	PubKey  string
 }
 
 // HotItem is structure of hot item
@@ -89,12 +90,9 @@ var (
 )
 
 var (
-	nip05Pool      *nostr.SimplePool
-	nip05PoolOnce  sync.Once
-	verifyMu       sync.Mutex
-	verifiedAuthor = map[string]bool{}
-	verifyInFlight = map[string]bool{}
-	skipNip05      bool
+	nip05Pool     *nostr.SimplePool
+	nip05PoolOnce sync.Once
+	skipNip05     bool
 )
 
 func normalize(s string) string {
@@ -227,65 +225,60 @@ func getNip05Pool() *nostr.SimplePool {
 	return nip05Pool
 }
 
-// isVerifiedAuthor reports whether the author's NIP-05 has been verified to
-// resolve back to the same pubkey. The first call for a new pubkey kicks off
-// an asynchronous verification and returns false; subsequent calls return the
-// cached result.
-func isVerifiedAuthor(pubkey string) bool {
+// verifyNip05Authors fetches kind:0 metadata for all given pubkeys in a single
+// batch and returns the set of pubkeys whose NIP-05 identifier resolves back
+// to the same pubkey.
+func verifyNip05Authors(ctx context.Context, pubkeys []string) map[string]bool {
+	verified := map[string]bool{}
 	if skipNip05 {
-		return true
+		for _, p := range pubkeys {
+			verified[p] = true
+		}
+		return verified
 	}
-	verifyMu.Lock()
-	if v, ok := verifiedAuthor[pubkey]; ok {
-		verifyMu.Unlock()
-		return v
+	if len(pubkeys) == 0 {
+		return verified
 	}
-	if verifyInFlight[pubkey] {
-		verifyMu.Unlock()
-		return false
-	}
-	verifyInFlight[pubkey] = true
-	verifyMu.Unlock()
 
-	go func() {
-		v := verifyNip05Author(pubkey)
-		verifyMu.Lock()
-		verifiedAuthor[pubkey] = v
-		delete(verifyInFlight, pubkey)
-		verifyMu.Unlock()
-	}()
-	return false
-}
-
-// verifyNip05Author fetches kind:0 metadata for pubkey and verifies that the
-// NIP-05 identifier in the profile resolves back to the same pubkey.
-func verifyNip05Author(pubkey string) bool {
-	ctx := context.Background()
 	metaCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
 	defer cancel()
-	re := getNip05Pool().QuerySingle(metaCtx, relays, nostr.Filter{
+	metaMap := getNip05Pool().FetchManyReplaceable(metaCtx, relays, nostr.Filter{
 		Kinds:   []int{nostr.KindProfileMetadata},
-		Authors: []string{pubkey},
+		Authors: pubkeys,
 	})
-	if re == nil {
-		return false
-	}
-	var profile struct {
-		Nip05 string `json:"nip05"`
-	}
-	if err := json.Unmarshal([]byte(re.Event.Content), &profile); err != nil {
-		return false
-	}
-	if profile.Nip05 == "" {
-		return false
-	}
-	qCtx, qCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer qCancel()
-	pp, err := nip05.QueryIdentifier(qCtx, profile.Nip05)
-	if err != nil || pp == nil {
-		return false
-	}
-	return pp.PublicKey == pubkey
+
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	metaMap.Range(func(key nostr.ReplaceableKey, ev *nostr.Event) bool {
+		pubkey := key.PubKey
+		var profile struct {
+			Nip05 string `json:"nip05"`
+		}
+		if err := json.Unmarshal([]byte(ev.Content), &profile); err != nil {
+			return true
+		}
+		if profile.Nip05 == "" {
+			return true
+		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			qCtx, qCancel := context.WithTimeout(ctx, 5*time.Second)
+			defer qCancel()
+			pp, err := nip05.QueryIdentifier(qCtx, profile.Nip05)
+			if err != nil || pp == nil {
+				return
+			}
+			if pp.PublicKey == pubkey {
+				mu.Lock()
+				verified[pubkey] = true
+				mu.Unlock()
+			}
+		}()
+		return true
+	})
+	wg.Wait()
+	return verified
 }
 
 func isIgnoreNpub(pub string) bool {
@@ -298,7 +291,7 @@ func isIgnoreNpub(pub string) bool {
 	})
 }
 
-func appendWord(where string, word string, t time.Time) {
+func appendWord(where, pubkey, word string, t time.Time) {
 	if word == "" {
 		return
 	}
@@ -311,6 +304,7 @@ func appendWord(where string, word string, t time.Time) {
 		Content: word,
 		Time:    t,
 		Where:   where,
+		PubKey:  pubkey,
 	})
 	if len(words) > 1000 {
 		words = words[1:]
@@ -385,11 +379,29 @@ func findWhere(ev *nostr.Event) string {
 }
 
 func makeRanks(where string) ([]*HotItem, error) {
-	// count the number of appearances per word
-	hotwords := map[string]*HotItem{}
+	// snapshot the words for `where` together with the set of distinct authors
 	mu.Lock()
+	filtered := make([]Word, 0, len(words))
+	authors := map[string]struct{}{}
 	for _, word := range words {
 		if word.Where != where {
+			continue
+		}
+		filtered = append(filtered, word)
+		authors[word.PubKey] = struct{}{}
+	}
+	mu.Unlock()
+
+	pubkeys := make([]string, 0, len(authors))
+	for k := range authors {
+		pubkeys = append(pubkeys, k)
+	}
+	verified := verifyNip05Authors(context.Background(), pubkeys)
+
+	// count the number of appearances per word from verified authors only
+	hotwords := map[string]*HotItem{}
+	for _, word := range filtered {
+		if !verified[word.PubKey] {
 			continue
 		}
 		content := strings.ToLower(word.Content)
@@ -402,7 +414,6 @@ func makeRanks(where string) ([]*HotItem, error) {
 			}
 		}
 	}
-	mu.Unlock()
 
 	// make list of items to sort
 	items := []*HotItem{}
@@ -574,10 +585,6 @@ func collectWords(ev *nostr.Event) {
 	if isIgnoreNpub(ev.PubKey) {
 		return
 	}
-	// drop events from authors whose NIP-05 has not been verified
-	if !isVerifiedAuthor(ev.PubKey) {
-		return
-	}
 	if strings.ContainsAny(ev.Content, " \t\n") && !reJapanese.MatchString(ev.Content) {
 		return
 	}
@@ -601,7 +608,7 @@ func collectWords(ev *nostr.Event) {
 			continue
 		}
 		if isSymbolWord(d, cc) {
-			appendWord(where, prev, ev.CreatedAt.Time())
+			appendWord(where, ev.PubKey, prev, ev.CreatedAt.Time())
 			prev = ""
 			continue
 		}
@@ -633,10 +640,10 @@ func collectWords(ev *nostr.Event) {
 			prevprev = token.Surface
 		}
 
-		appendWord(where, prev, ev.CreatedAt.Time())
+		appendWord(where, ev.PubKey, prev, ev.CreatedAt.Time())
 		prev = ""
 	}
-	appendWord(where, prev, ev.CreatedAt.Time())
+	appendWord(where, ev.PubKey, prev, ev.CreatedAt.Time())
 }
 
 func test() {
