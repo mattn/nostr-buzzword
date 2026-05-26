@@ -428,7 +428,7 @@ func makeRanks(where string) ([]*HotItem, error) {
 
 	items = removeDuplicate(items, func(e *HotItem) string { return e.Word })
 
-	if len(items) < 10 {
+	if len(items) < 5 {
 		return nil, fmt.Errorf("too less: %v items", len(items))
 	}
 	sort.Slice(items, func(i, j int) bool {
