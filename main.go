@@ -332,13 +332,11 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 			}
 		case <-summarizer.C:
 			log.Printf("Run Summarizer")
-			if ranks, err := makeRanks(""); err == nil {
-				err := postRanks(os.Getenv("BOT_NSEC"), ranks, relays, nil)
-				if err != nil {
-					log.Println(err)
-				}
-			} else {
-				log.Println(err)
+			ranks, err := makeRanks("")
+			if err != nil {
+				log.Println("makeRanks:", err)
+			} else if err := postRanks(os.Getenv("BOT_NSEC"), ranks, relays, nil); err != nil {
+				log.Println("postRanks:", err)
 			}
 			continue
 		case <-deleter.C:
@@ -400,10 +398,12 @@ func makeRanks(where string) ([]*HotItem, error) {
 
 	// count the number of appearances per word from verified authors only
 	hotwords := map[string]*HotItem{}
+	kept := 0
 	for _, word := range filtered {
 		if !verified[word.PubKey] {
 			continue
 		}
+		kept++
 		content := strings.ToLower(word.Content)
 		if i, ok := hotwords[content]; ok {
 			i.Count++
@@ -414,6 +414,8 @@ func makeRanks(where string) ([]*HotItem, error) {
 			}
 		}
 	}
+	log.Printf("makeRanks where=%q words=%d authors=%d verified=%d kept=%d distinct=%d",
+		where, len(filtered), len(pubkeys), len(verified), kept, len(hotwords))
 
 	// make list of items to sort
 	items := []*HotItem{}
@@ -533,11 +535,11 @@ events_loop:
 				if ev.CreatedAt.Time().Sub(time.Now()).Seconds() < 10 {
 					// post ranking summary as reply
 
-					if ranks, err := makeRanks(findWhere(ev.Event)); err == nil {
-						err := postRanks(os.Getenv("BOT_NSEC"), ranks, relays, ev.Event)
-						if err != nil {
-							log.Println(err)
-						}
+					ranks, err := makeRanks(findWhere(ev.Event))
+					if err != nil {
+						log.Println("makeRanks:", err)
+					} else if err := postRanks(os.Getenv("BOT_NSEC"), ranks, relays, ev.Event); err != nil {
+						log.Println("postRanks:", err)
 					}
 					continue
 				}
