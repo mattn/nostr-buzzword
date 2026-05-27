@@ -150,10 +150,15 @@ func postRanks(nsec string, items []*HotItem, relays []string, ev *nostr.Event) 
 	var buf bytes.Buffer
 	tags := nostr.Tags{}
 	fmt.Fprint(&buf, "#バズワードランキング\n\n")
-	for i, item := range items {
-		fmt.Fprintf(&buf, "%d位: #%s (%d)\n", i+1, item.Word, item.Count)
+	rank := 0
+	for _, item := range items {
+		if item.Count < 3 {
+			continue
+		}
+		rank++
+		fmt.Fprintf(&buf, "%d位: #%s (%d)\n", rank, item.Word, item.Count)
 		tags = tags.AppendUnique(nostr.Tag{"t", item.Word})
-		if i >= 9 {
+		if rank >= 10 {
 			break
 		}
 	}
@@ -417,19 +422,20 @@ func makeRanks(where string) ([]*HotItem, error) {
 	log.Printf("makeRanks where=%q words=%d authors=%d verified=%d kept=%d distinct=%d",
 		where, len(filtered), len(pubkeys), len(verified), kept, len(hotwords))
 
-	// make list of items to sort
+	// make list of items to sort (include all words; ranking filter is applied by the caller)
 	items := []*HotItem{}
+	ranked := 0
 	for _, item := range hotwords {
-		if item.Count < 3 {
-			continue
-		}
 		items = append(items, item)
+		if item.Count >= 3 {
+			ranked++
+		}
 	}
 
 	items = removeDuplicate(items, func(e *HotItem) string { return e.Word })
 
-	if len(items) < 5 {
-		return nil, fmt.Errorf("too less: %v items", len(items))
+	if ranked < 5 {
+		return nil, fmt.Errorf("too less: %v items", ranked)
 	}
 	sort.Slice(items, func(i, j int) bool {
 		return items[i].Count > items[j].Count
@@ -448,9 +454,6 @@ func makeWordCloud(items []*HotItem, sign func(*nostr.Event) error) (string, err
 
 	inputWords := map[string]int{}
 	for _, item := range items {
-		if item.Count <= 1 {
-			continue
-		}
 		inputWords[item.Word] = item.Count
 	}
 	img := wordclouds.NewWordcloud(inputWords,
@@ -665,8 +668,13 @@ func test() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for i, item := range items {
-		fmt.Fprintf(os.Stdout, "%d位: %s (%d)\n", i+1, item.Word, item.Count)
+	rank := 0
+	for _, item := range items {
+		if item.Count < 3 {
+			continue
+		}
+		rank++
+		fmt.Fprintf(os.Stdout, "%d位: %s (%d)\n", rank, item.Word, item.Count)
 	}
 }
 
