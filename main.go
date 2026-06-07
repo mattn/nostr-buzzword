@@ -29,7 +29,6 @@ import (
 	nostr "github.com/nbd-wtf/go-nostr"
 	"github.com/nbd-wtf/go-nostr/nip05"
 	"github.com/nbd-wtf/go-nostr/nip19"
-	"github.com/psykhi/wordclouds"
 )
 
 const name = "nostr-buzzword"
@@ -468,20 +467,30 @@ func makeWordCloud(items []*HotItem, sign func(*nostr.Event) error) (string, err
 	for _, item := range items {
 		inputWords[item.Word] = item.Count
 	}
-	img := wordclouds.NewWordcloud(inputWords,
-		wordclouds.FontFile(env("FONTFILE", "Koruri-Regular.ttf")),
-		wordclouds.FontMaxSize(100),
-		wordclouds.FontMinSize(10),
-		wordclouds.Colors(colors),
-		wordclouds.Height(500),
-		wordclouds.Width(500),
-		wordclouds.RandomPlacement(false),
-		wordclouds.BackgroundColor(color.RGBA{255, 255, 255, 255}),
-		wordclouds.WordSizeFunction("linear"),
-	).Draw()
+
+	verticalRatio := 0.3
+	if v := env("BUZZWORD_VERTICAL_RATIO", ""); v != "" {
+		if f, err := strconv.ParseFloat(v, 64); err == nil {
+			verticalRatio = f
+		}
+	}
+
+	img, err := drawWordCloud(inputWords, wordCloudConfig{
+		fontFile:      env("FONTFILE", "Koruri-Regular.ttf"),
+		width:         500,
+		height:        500,
+		fontMaxSize:   100,
+		fontMinSize:   10,
+		colors:        colors,
+		background:    color.RGBA{255, 255, 255, 255},
+		verticalRatio: verticalRatio,
+	})
+	if err != nil {
+		return "", err
+	}
 
 	var buf bytes.Buffer
-	err := png.Encode(&buf, img)
+	err = png.Encode(&buf, img)
 	if err != nil {
 		return "", err
 	}

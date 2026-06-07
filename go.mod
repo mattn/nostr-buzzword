@@ -3,12 +3,13 @@ module github.com/mattn/nostr-buzzword
 go 1.25.0
 
 require (
+	github.com/fogleman/gg v1.3.0
 	github.com/ikawaha/kagome-dict v1.1.6
 	github.com/ikawaha/kagome-dict-ipa-neologd v0.3.2
 	github.com/ikawaha/kagome/v2 v2.10.2
 	github.com/mattn/go-nostrbuild v0.0.10
 	github.com/nbd-wtf/go-nostr v0.52.3
-	github.com/psykhi/wordclouds v0.0.0-20231014190151-b9dd58fabbef
+	golang.org/x/image v0.34.0
 )
 
 require (
@@ -23,9 +24,7 @@ require (
 	github.com/coder/websocket v1.8.14 // indirect
 	github.com/decred/dcrd/crypto/blake256 v1.1.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
-	github.com/fogleman/gg v1.3.0 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
@@ -39,6 +38,5 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	golang.org/x/arch v0.23.0 // indirect
 	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
-	golang.org/x/image v0.34.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 )
