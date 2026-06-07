@@ -16,6 +16,7 @@ import (
 	"regexp"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -311,10 +312,21 @@ func appendWord(where, pubkey, word string, t time.Time) {
 		Where:   where,
 		PubKey:  pubkey,
 	})
-	if len(words) > 1000 {
-		words = words[1:]
+	if max := targetWords(); len(words) > max {
+		words = words[len(words)-max:]
 	}
 	mu.Unlock()
+}
+
+// targetWords is the number of recent words we keep in the rolling buffer used
+// to compute rankings. Verifying authors by NIP-05 drops the words of
+// unverified authors at ranking time, so the buffer needs to hold more raw
+// words than before to keep enough verified ones. Override with BUZZWORD_WORDS.
+func targetWords() int {
+	if n, err := strconv.Atoi(os.Getenv("BUZZWORD_WORDS")); err == nil && n > 0 {
+		return n
+	}
+	return 3000
 }
 
 func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
