@@ -636,15 +636,17 @@ func collectWords(ev *nostr.Event) {
 		if isSymbolWord(d, cc) {
 			appendWord(where, ev.PubKey, prev, ev.CreatedAt.Time())
 			prev = ""
+			prevprev = ""
 			continue
 		}
 
 		if cc[0] == "名詞" {
-			if prev == "" && prevprev != "" {
-				prev = prevprev
-			}
 			if cc[1] == "一般" || cc[1] == "固有名詞" || cc[1] == "サ変接続" || cc[1] == "数" {
 				if !strings.ContainsAny(token.Surface, "()〜#*/") {
+					if prev == "" {
+						prev = prevprev
+					}
+					prevprev = ""
 					prev = join(prev, token.Surface)
 					continue
 				}
@@ -654,20 +656,34 @@ func collectWords(ev *nostr.Event) {
 				continue
 			}
 		} else if cc[0] == "カスタム名詞" {
-			if prev == "" && prevprev != "" {
+			if prev == "" {
 				prev = prevprev
 			}
+			prevprev = ""
 			prev = join(prev, token.Surface)
 			continue
 		} else if prev != "" && cc[0] == "助詞" && cc[1] == "接尾" {
 			prev = join(prev, token.Surface)
 			continue
 		} else if cc[0] == "形容詞" {
-			prevprev = token.Surface
+			if cc[1] == "自立" {
+				// hold the adjective only as a prefix candidate for the
+				// noun that immediately follows; never append it alone
+				appendWord(where, ev.PubKey, prev, ev.CreatedAt.Time())
+				prev = ""
+				prevprev = token.Surface
+				continue
+			}
+			if prev != "" && cc[1] == "接尾" {
+				// e.g. 子供っぽい
+				prev = join(prev, token.Surface)
+				continue
+			}
 		}
 
 		appendWord(where, ev.PubKey, prev, ev.CreatedAt.Time())
 		prev = ""
+		prevprev = ""
 	}
 	appendWord(where, ev.PubKey, prev, ev.CreatedAt.Time())
 }
