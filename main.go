@@ -40,6 +40,7 @@ var revision = "HEAD"
 var (
 	reLink     = regexp.MustCompile(`\b\w+://\S+\b`)
 	reTag      = regexp.MustCompile(`(\B#\S+|\bnostr:\S+)`)
+	reBech32   = regexp.MustCompile(`\b(?:npub|nsec|note|nprofile|nevent|naddr|nrelay)1[02-9ac-hj-np-z]{20,}\b`)
 	reJapanese = regexp.MustCompile(`[０-９Ａ-Ｚａ-ｚぁ-ゖァ-ヾ一-鶴]`)
 
 	relays = []string{
@@ -100,6 +101,8 @@ func normalize(s string) string {
 	s = reLink.ReplaceAllString(s, "")
 	// remove Tags
 	s = reTag.ReplaceAllString(s, "")
+	// remove bare NIP-19 bech32 entities (e.g. npub1..., note1...)
+	s = reBech32.ReplaceAllString(s, "")
 	return strings.TrimSpace(s)
 }
 
