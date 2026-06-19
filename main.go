@@ -41,6 +41,7 @@ var (
 	reLink     = regexp.MustCompile(`\b\w+://\S+\b`)
 	reTag      = regexp.MustCompile(`(\B#\S+|\bnostr:\S+)`)
 	reBech32   = regexp.MustCompile(`\b(?:npub|nsec|note|nprofile|nevent|naddr|nrelay)1[02-9ac-hj-np-z]{20,}\b`)
+	reWordChar = regexp.MustCompile(`[\p{L}\p{N}]`)
 	reJapanese = regexp.MustCompile(`[０-９Ａ-Ｚａ-ｚぁ-ゖァ-ヾ一-鶴]`)
 
 	relays = []string{
@@ -636,7 +637,10 @@ func collectWords(ev *nostr.Event) {
 		if isWhiteSpace(d, cc) {
 			continue
 		}
-		if isSymbolWord(d, cc) {
+		// Treat as a symbol any token that has no letters/digits. The IPA
+		// dictionary classifies operators like "+" and "-" as 名詞 サ変接続,
+		// so without this they would slip through and be ranked.
+		if isSymbolWord(d, cc) || !reWordChar.MatchString(token.Surface) {
 			appendWord(where, ev.PubKey, prev, ev.CreatedAt.Time())
 			prev = ""
 			prevprev = ""
