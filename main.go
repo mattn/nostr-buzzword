@@ -82,8 +82,21 @@ type Word struct {
 
 // HotItem is structure of hot item
 type HotItem struct {
-	Word  string
-	Count int
+	Word    string
+	Count   int
+	Authors int
+}
+
+// minRankCount and minRankAuthors are the thresholds a word must clear to be
+// ranked. Requiring several distinct authors keeps a single account repeating
+// the same phrase from taking the top slots on its own.
+const (
+	minRankCount   = 3
+	minRankAuthors = 3
+)
+
+func (i *HotItem) rankable() bool {
+	return i.Count >= minRankCount && i.Authors >= minRankAuthors
 }
 
 var (
@@ -175,7 +188,7 @@ func postRanks(nsec string, items []*HotItem, relays []string, ev *nostr.Event) 
 	fmt.Fprint(&buf, "#バズワードランキング\n\n")
 	rank := 0
 	for _, item := range items {
-		if item.Count < 3 {
+		if !item.rankable() {
 			continue
 		}
 		rank++
@@ -438,8 +451,10 @@ func makeRanks(where string) ([]*HotItem, error) {
 	}
 	verified := verifyNip05Authors(context.Background(), pubkeys)
 
-	// count the number of appearances per word from verified authors only
+	// count the number of appearances per word from verified authors only,
+	// together with how many distinct authors used it
 	hotwords := map[string]*HotItem{}
+	byWord := map[string]map[string]struct{}{}
 	kept := 0
 	for _, word := range filtered {
 		if !verified[word.PubKey] {
@@ -447,13 +462,16 @@ func makeRanks(where string) ([]*HotItem, error) {
 		}
 		kept++
 		content := strings.ToLower(word.Content)
-		if i, ok := hotwords[content]; ok {
-			i.Count++
-		} else {
-			hotwords[content] = &HotItem{
-				Word:  word.Content,
-				Count: 1,
-			}
+		i, ok := hotwords[content]
+		if !ok {
+			i = &HotItem{Word: word.Content}
+			hotwords[content] = i
+			byWord[content] = map[string]struct{}{}
+		}
+		i.Count++
+		if _, ok := byWord[content][word.PubKey]; !ok {
+			byWord[content][word.PubKey] = struct{}{}
+			i.Authors++
 		}
 	}
 	log.Printf("makeRanks where=%q words=%d authors=%d verified=%d kept=%d distinct=%d",
@@ -464,7 +482,7 @@ func makeRanks(where string) ([]*HotItem, error) {
 	ranked := 0
 	for _, item := range hotwords {
 		items = append(items, item)
-		if item.Count >= 3 {
+		if item.rankable() {
 			ranked++
 		}
 	}
@@ -736,7 +754,7 @@ func test() {
 	}
 	rank := 0
 	for _, item := range items {
-		if item.Count < 3 {
+		if !item.rankable() {
 			continue
 		}
 		rank++
