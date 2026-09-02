@@ -18,7 +18,9 @@ This bot replies buzz word ranking summary if you post `バズワードランキ
 go install github.com/mattn/nostr-buzzword@latest
 ```
 
-If you would like to ignore some npub(s), set $IGNORES for the path to the ignores.txt which is listed npub hex.
+Bots listed on https://github.com/nostr-jp/botlist are ignored automatically. The list is fetched at startup and every 6 hours, so a newly registered bot takes effect without a redeploy. Set $BOTLIST_URL to use another list, or set it empty to disable the fetch.
+
+If you would like to ignore some npub(s) in addition to that list, set $IGNORES for the path to the ignores.txt which is listed npub hex.
 
 If you would like to use user dictionary to use customized tokenizer, set $USERDIC for the path to the userdic.txt written as mecab dictionary format.
 
