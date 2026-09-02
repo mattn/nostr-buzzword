@@ -87,12 +87,17 @@ type HotItem struct {
 	Authors int
 }
 
+// maxPerAuthor caps how much one author can add to a word's count. Without it
+// a single account can decide the ranking just by repeating itself, which is
+// something the shared bot list cannot help with because the accounts doing it
+// are ordinary people, not bots.
+const maxPerAuthor = 2
+
 // minRankCount and minRankAuthors are the thresholds a word must clear to be
-// ranked. Requiring several distinct authors keeps a single account repeating
-// the same phrase from taking the top slots on its own.
+// ranked.
 const (
 	minRankCount   = 3
-	minRankAuthors = 3
+	minRankAuthors = 2
 )
 
 func (i *HotItem) rankable() bool {
@@ -451,10 +456,10 @@ func makeRanks(where string) ([]*HotItem, error) {
 	}
 	verified := verifyNip05Authors(context.Background(), pubkeys)
 
-	// count the number of appearances per word from verified authors only,
-	// together with how many distinct authors used it
+	// count the appearances per word from verified authors only, capping what
+	// each author contributes and tracking how many distinct authors used it
 	hotwords := map[string]*HotItem{}
-	byWord := map[string]map[string]struct{}{}
+	byWord := map[string]map[string]int{}
 	kept := 0
 	for _, word := range filtered {
 		if !verified[word.PubKey] {
@@ -466,12 +471,15 @@ func makeRanks(where string) ([]*HotItem, error) {
 		if !ok {
 			i = &HotItem{Word: word.Content}
 			hotwords[content] = i
-			byWord[content] = map[string]struct{}{}
+			byWord[content] = map[string]int{}
 		}
-		i.Count++
-		if _, ok := byWord[content][word.PubKey]; !ok {
-			byWord[content][word.PubKey] = struct{}{}
+		seen := byWord[content][word.PubKey]
+		byWord[content][word.PubKey] = seen + 1
+		if seen == 0 {
 			i.Authors++
+		}
+		if seen < maxPerAuthor {
+			i.Count++
 		}
 	}
 	log.Printf("makeRanks where=%q words=%d authors=%d verified=%d kept=%d distinct=%d",
