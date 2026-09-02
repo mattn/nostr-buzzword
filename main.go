@@ -798,6 +798,9 @@ func main() {
 	if err == nil {
 		t, err = tokenizer.New(d, tokenizer.UserDict(udict), tokenizer.OmitBosEos())
 	} else {
+		// a broken userdic.txt used to be swallowed here, leaving the whole
+		// user dictionary silently unused
+		log.Printf("cannot load %s: %v", userdicFile, err)
 		t, err = tokenizer.New(d, tokenizer.OmitBosEos())
 	}
 	if err != nil {
