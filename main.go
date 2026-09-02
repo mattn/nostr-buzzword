@@ -399,7 +399,7 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 			now := time.Now()
 			mu.Lock()
 			words = slices.DeleteFunc(words, func(word Word) bool {
-				return word.Time.Sub(now) > time.Hour
+				return now.Sub(word.Time) > time.Hour
 			})
 			mu.Unlock()
 			continue
