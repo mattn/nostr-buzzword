@@ -21,6 +21,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode"
 
 	"github.com/ikawaha/kagome-dict-ipa-neologd"
 	"github.com/ikawaha/kagome-dict/dict"
@@ -42,6 +43,7 @@ var (
 	reTag      = regexp.MustCompile(`(\B#\S+|\bnostr:\S+)`)
 	reBech32   = regexp.MustCompile(`\b(?:npub|nsec|note|nprofile|nevent|naddr|nrelay)1[02-9ac-hj-np-z]{20,}\b`)
 	reWordChar = regexp.MustCompile(`[\p{L}\p{N}]`)
+	reLetter   = regexp.MustCompile(`\p{L}`)
 	reJapanese = regexp.MustCompile(`[０-９Ａ-Ｚａ-ｚぁ-ゖァ-ヾ一-鶴]`)
 
 	relays = []string{
@@ -109,6 +111,23 @@ func normalize(s string) string {
 
 func isIgnoreWord(s string) bool {
 	return slices.Contains(badwords, s)
+}
+
+// isNoiseWord reports whether an assembled word is never worth ranking, no
+// matter how often it appears.
+func isNoiseWord(s string) bool {
+	// Digits only, e.g. "1", "00", "5", "2026". The IPA dictionary classifies
+	// them as 名詞 数 and they join with following nouns ("5時"), but on their
+	// own they carry no meaning.
+	if !reLetter.MatchString(s) {
+		return true
+	}
+	// A lone non-ASCII letter is almost always a leftover of a kaomoji such as
+	// (´・ω・｀). Single ASCII letters ("X") and single kanji stay.
+	if r := []rune(s); len(r) == 1 && r[0] > unicode.MaxASCII && !unicode.Is(unicode.Han, r[0]) {
+		return true
+	}
+	return false
 }
 
 func isWhiteSpace(d *dict.Dict, c []string) bool {
@@ -305,6 +324,9 @@ func appendWord(where, pubkey, word string, t time.Time) {
 		return
 	}
 	if isIgnoreWord(word) {
+		return
+	}
+	if isNoiseWord(word) {
 		return
 	}
 
