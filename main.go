@@ -54,7 +54,6 @@ var (
 		"wss://nostr.compile-error.net",
 	}
 
-	ignores  = []string{}
 	badwords = []string{
 		"ー",
 		"〜",
@@ -116,6 +115,81 @@ var (
 	nip05PoolOnce sync.Once
 	skipNip05     bool
 )
+
+// defaultBotlistURL is the shared list of Japanese Nostr bots. Fetching it at
+// runtime means a newly registered bot takes effect without regenerating
+// ignores.txt and redeploying.
+const defaultBotlistURL = "https://nostr-jp.github.io/botlist/botlist.json"
+
+// botlistInterval is how often the shared bot list is refetched.
+const botlistInterval = 6 * time.Hour
+
+var (
+	ignoresMu    sync.RWMutex
+	ignores      = map[string]struct{}{}
+	localIgnores []string
+)
+
+// setIgnores replaces the ignore set with the local ignores.txt entries plus
+// the given npubs.
+func setIgnores(npubs []string) {
+	set := make(map[string]struct{}, len(localIgnores)+len(npubs))
+	for _, npub := range localIgnores {
+		set[npub] = struct{}{}
+	}
+	for _, npub := range npubs {
+		set[npub] = struct{}{}
+	}
+	ignoresMu.Lock()
+	ignores = set
+	ignoresMu.Unlock()
+}
+
+// fetchBotlist downloads the shared bot list and returns the listed npubs.
+func fetchBotlist(url string) ([]string, error) {
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("%s: %s", url, resp.Status)
+	}
+	var list []struct {
+		PubKey string `json:"pubkey"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&list); err != nil {
+		return nil, err
+	}
+	npubs := make([]string, 0, len(list))
+	for _, item := range list {
+		if item.PubKey != "" {
+			npubs = append(npubs, item.PubKey)
+		}
+	}
+	return npubs, nil
+}
+
+// refreshBotlist reloads the ignore set from the shared bot list. The local
+// ignores.txt entries stay in effect even when the fetch fails.
+func refreshBotlist(url string) {
+	npubs, err := fetchBotlist(url)
+	if err != nil {
+		log.Println("fetchBotlist:", err)
+		return
+	}
+	setIgnores(npubs)
+	log.Printf("botlist: %d bots from %s", len(npubs), url)
+}
+
+// keepBotlist keeps the ignore set in sync with the shared bot list.
+func keepBotlist(url string) {
+	for {
+		time.Sleep(botlistInterval)
+		refreshBotlist(url)
+	}
+}
 
 func normalize(s string) string {
 	// remove URLs
@@ -332,9 +406,10 @@ func isIgnoreNpub(pub string) bool {
 	if err != nil {
 		return false
 	}
-	return slices.ContainsFunc(ignores, func(is string) bool {
-		return is == npub
-	})
+	ignoresMu.RLock()
+	defer ignoresMu.RUnlock()
+	_, ok := ignores[npub]
+	return ok
 }
 
 func appendWord(where, pubkey, word string, t time.Time) {
@@ -783,6 +858,7 @@ func init() {
 
 func main() {
 	var ver, tt bool
+	var botlistURL string
 	var ignoresFile string
 	var userdicFile string
 	var badwordsFile string
@@ -791,6 +867,13 @@ func main() {
 	flag.StringVar(&ignoresFile, "ignores", env("IGNORES", "ignores.txt"), "path to ignores.txt")
 	flag.StringVar(&badwordsFile, "badwords", env("BADWORDS", "badwords.txt"), "path to badwords.txt")
 	flag.StringVar(&userdicFile, "userdic", env("USERDIC", "userdic.txt"), "path to userdic.txt")
+	// LookupEnv, not env, so that BOTLIST_URL= disables the fetch instead of
+	// falling back to the default
+	botlistDefault := defaultBotlistURL
+	if v, ok := os.LookupEnv("BOTLIST_URL"); ok {
+		botlistDefault = v
+	}
+	flag.StringVar(&botlistURL, "botlist", botlistDefault, "URL of the shared bot list (empty to disable)")
 	flag.Parse()
 
 	if ver {
@@ -828,10 +911,11 @@ func main() {
 			}
 			tok := strings.Split(text, " ")
 			if len(tok) >= 1 {
-				ignores = append(ignores, tok[0])
+				localIgnores = append(localIgnores, tok[0])
 			}
 		}
 	}
+	setIgnores(nil)
 
 	// load badwords.txt
 	f, err = os.Open(badwordsFile)
@@ -845,9 +929,17 @@ func main() {
 		}
 	}
 
+	if botlistURL != "" {
+		refreshBotlist(botlistURL)
+	}
+
 	if tt {
 		test()
 		os.Exit(0)
+	}
+
+	if botlistURL != "" {
+		go keepBotlist(botlistURL)
 	}
 
 	for {
