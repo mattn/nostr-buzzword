@@ -437,9 +437,11 @@ func appendWord(where, pubkey, word string, t time.Time) {
 }
 
 // targetWords is the number of recent words we keep in the rolling buffer used
-// to compute rankings. Verifying authors by NIP-05 drops the words of
-// unverified authors at ranking time, so the buffer needs to hold more raw
-// words than before to keep enough verified ones. Override with BUZZWORD_WORDS.
+// to compute rankings, and with it the period a ranking covers: the buffer
+// stretches over quiet hours and shrinks when the timeline is busy. Verifying
+// authors by NIP-05 drops the words of unverified authors at ranking time, so
+// the buffer needs to hold more raw words than that suggests to keep enough
+// verified ones. Override with BUZZWORD_WORDS.
 func targetWords() int {
 	if n, err := strconv.Atoi(os.Getenv("BUZZWORD_WORDS")); err == nil && n > 0 {
 		return n
@@ -453,9 +455,6 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 	// summarizer post a summary every hour
 	summarizer := time.NewTicker(time.Hour)
 	defer summarizer.Stop()
-	// deleter delete old enties
-	deleter := time.NewTicker(10 * time.Minute)
-	defer deleter.Stop()
 
 	for {
 		var ev *nostr.Event
@@ -473,15 +472,6 @@ func collect(wg *sync.WaitGroup, ch chan *nostr.Event) {
 			} else if err := postRanks(os.Getenv("BOT_NSEC"), ranks, relays, nil); err != nil {
 				log.Println("postRanks:", err)
 			}
-			continue
-		case <-deleter.C:
-			log.Printf("Run Deleter")
-			now := time.Now()
-			mu.Lock()
-			words = slices.DeleteFunc(words, func(word Word) bool {
-				return now.Sub(word.Time) > time.Hour
-			})
-			mu.Unlock()
 			continue
 		}
 
@@ -557,8 +547,12 @@ func makeRanks(where string) ([]*HotItem, error) {
 			i.Count++
 		}
 	}
-	log.Printf("makeRanks where=%q words=%d authors=%d verified=%d kept=%d distinct=%d",
-		where, len(filtered), len(pubkeys), len(verified), kept, len(hotwords))
+	var span time.Duration
+	if len(filtered) > 0 {
+		span = filtered[len(filtered)-1].Time.Sub(filtered[0].Time)
+	}
+	log.Printf("makeRanks where=%q words=%d span=%s authors=%d verified=%d kept=%d distinct=%d",
+		where, len(filtered), span.Round(time.Minute), len(pubkeys), len(verified), kept, len(hotwords))
 
 	// make list of items to sort (include all words; ranking filter is applied by the caller)
 	items := []*HotItem{}
