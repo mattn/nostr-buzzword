@@ -547,10 +547,18 @@ func makeRanks(where string) ([]*HotItem, error) {
 			i.Count++
 		}
 	}
-	var span time.Duration
-	if len(filtered) > 0 {
-		span = filtered[len(filtered)-1].Time.Sub(filtered[0].Time)
+	// relays hand back stored events newest first, so the buffer is not in
+	// chronological order and the ends of it say nothing about the period
+	var oldest, newest time.Time
+	for _, word := range filtered {
+		if oldest.IsZero() || word.Time.Before(oldest) {
+			oldest = word.Time
+		}
+		if word.Time.After(newest) {
+			newest = word.Time
+		}
 	}
+	span := newest.Sub(oldest)
 	log.Printf("makeRanks where=%q words=%d span=%s authors=%d verified=%d kept=%d distinct=%d",
 		where, len(filtered), span.Round(time.Minute), len(pubkeys), len(verified), kept, len(hotwords))
 
