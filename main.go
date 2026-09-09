@@ -640,6 +640,69 @@ func heartbeatPush(url string) {
 	defer resp.Body.Close()
 }
 
+// primeWindow is how far back primeWords asks relays to go. At the observed
+// rate of a few hundred words an hour it takes most of a day to collect
+// targetWords() words live, so without priming a restart leaves the ranking
+// empty for hours.
+const primeWindow = 24 * time.Hour
+
+// primePageSize is how many stored events one page of the backfill asks for.
+const primePageSize = 500
+
+var primeOnce sync.Once
+
+// primeWords fills the rolling buffer from stored events. Relays cap how many
+// stored events they return for one filter, in practice a few hundred, so the
+// history is walked backwards a page at a time until the buffer would be full
+// or the window runs out. It runs once per process: SubMany resubscribes on
+// reconnect and replaying the same events would count them twice.
+func primeWords(ctx context.Context, relays []string) {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	defer cancel()
+
+	want := targetWords()
+	since := nostr.Timestamp(time.Now().Add(-primeWindow).Unix())
+	until := nostr.Timestamp(time.Now().Unix())
+	pool := nostr.NewSimplePool(ctx)
+
+	var evs []*nostr.Event
+	seen := map[string]struct{}{}
+	for len(evs) < want {
+		oldest := until
+		got := 0
+		for ev := range pool.FetchMany(ctx, relays, nostr.Filter{
+			Kinds: []int{nostr.KindTextNote, nostr.KindChannelMessage},
+			Since: &since,
+			Until: &until,
+			Limit: primePageSize,
+		}) {
+			if _, ok := seen[ev.Event.ID]; ok {
+				continue
+			}
+			seen[ev.Event.ID] = struct{}{}
+			evs = append(evs, ev.Event)
+			got++
+			if ev.Event.CreatedAt < oldest {
+				oldest = ev.Event.CreatedAt
+			}
+		}
+		if got == 0 || oldest <= since || ctx.Err() != nil {
+			break
+		}
+		until = oldest - 1
+	}
+
+	// oldest first, so that overflowing the buffer trims the oldest words
+	sort.Slice(evs, func(i, j int) bool { return evs[i].CreatedAt < evs[j].CreatedAt })
+	for _, ev := range evs {
+		collectWords(ev)
+	}
+	mu.Lock()
+	n := len(words)
+	mu.Unlock()
+	log.Printf("primed %d events, %d words", len(evs), n)
+}
+
 func server() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -652,6 +715,8 @@ func server() {
 		"wss://yabu.me",
 		"wss://relay-jp.nostr.wirednet.jp",
 	}
+	primeOnce.Do(func() { primeWords(ctx, relays) })
+
 	sub := pool.SubMany(ctx, relays, filters)
 	defer close(sub)
 
